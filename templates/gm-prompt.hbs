@@ -1,0 +1,13 @@
+<div class="hcd-prompt hcd-deck-{{deck}}">
+  <header class="hcd-prompt-header"><i class="{{icon}}"></i> {{deckLabel}}</header>
+  <p>{{summary}}</p>
+  {{#if pending}}
+  <p><strong>{{question}}</strong></p>
+  <div class="hcd-prompt-buttons">
+    <button type="button" data-hcd-action="draw"><i class="fa-solid fa-hand-sparkles"></i> {{localize "HCD.Prompt.Draw"}}</button>
+    <button type="button" data-hcd-action="ignore"><i class="fa-solid fa-xmark"></i> {{localize "HCD.Prompt.Ignore"}}</button>
+  </div>
+  {{else}}
+  <p class="hcd-prompt-state">{{stateLabel}}</p>
+  {{/if}}
+</div>

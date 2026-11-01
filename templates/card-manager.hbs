@@ -1,0 +1,61 @@
+<div class="hcd-manager-wrap">
+  <div class="hcd-manager-body">
+    <p class="hint">{{localize "HCD.Manager.Hint"}}</p>
+
+    {{#each sections}}
+    <section class="hcd-section hcd-deck-{{deck}}">
+      <header class="hcd-section-header">
+        <h3><i class="{{icon}}"></i> {{label}} <span class="hcd-count">({{cards.length}})</span></h3>
+        <button type="button" data-action="testDraw" data-deck="{{deck}}" data-tooltip="HCD.Manager.TestDrawHint">
+          <i class="fa-solid fa-hand-sparkles"></i> {{localize "HCD.Manager.TestDraw"}}
+        </button>
+        <button type="button" data-action="addCard" data-deck="{{deck}}">
+          <i class="fa-solid fa-plus"></i> {{localize "HCD.Manager.AddCard"}}
+        </button>
+      </header>
+
+      {{#each cards}}
+      <div class="hcd-card-row{{#unless enabled}} hcd-disabled{{/unless}}" data-card-id="{{id}}">
+        <input type="hidden" name="cards.{{index}}.id" value="{{id}}">
+        <input type="hidden" name="cards.{{index}}.deck" value="{{deck}}">
+        <div class="hcd-row-top">
+          <input type="checkbox" name="cards.{{index}}.enabled" {{checked enabled}} data-tooltip="HCD.Manager.Enabled">
+          <input type="text" name="cards.{{index}}.title" value="{{title}}" placeholder="{{localize 'HCD.Manager.TitlePlaceholder'}}">
+          <select name="cards.{{index}}.type" class="hcd-type-select">
+            {{selectOptions @root.typeChoices selected=type localize=true}}
+          </select>
+          <select name="cards.{{index}}.attackType" class="hcd-specific-select" {{#if isGeneral}}disabled{{/if}}
+                  data-tooltip="HCD.Manager.AttackTypeHint">
+            {{selectOptions @root.attackChoices selected=attackValue localize=true}}
+          </select>
+          {{#if @root.useDamageTypes}}
+          <select name="cards.{{index}}.damageType" class="hcd-specific-select" {{#if isGeneral}}disabled{{/if}}
+                  data-tooltip="HCD.Manager.DamageTypeHint">
+            {{selectOptions @root.damageChoices selected=damageValue localize=true}}
+          </select>
+          {{else}}
+          {{!-- Keep stored damage types while the option is switched off --}}
+          <input type="hidden" name="cards.{{index}}.damageType" value="{{damageValue}}">
+          {{/if}}
+          <button type="button" class="icon" data-action="deleteCard" data-index="{{index}}" data-tooltip="HCD.Manager.Delete">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+        <textarea name="cards.{{index}}.effect" rows="3" placeholder="{{localize 'HCD.Manager.EffectPlaceholder'}}">{{effect}}</textarea>
+      </div>
+      {{else}}
+      <p class="hcd-empty">{{localize "HCD.Manager.NoCards"}}</p>
+      {{/each}}
+    </section>
+    {{/each}}
+  </div>
+
+  <footer class="hcd-manager-footer">
+    <button type="button" data-action="importCards"><i class="fa-solid fa-file-import"></i> {{localize "HCD.Manager.Import"}}</button>
+    <button type="button" data-action="exportCards"><i class="fa-solid fa-file-export"></i> {{localize "HCD.Manager.Export"}}</button>
+    {{#if discardMode}}
+    <button type="button" data-action="reshuffle"><i class="fa-solid fa-shuffle"></i> {{localize "HCD.Manager.Reshuffle"}}</button>
+    {{/if}}
+    <button type="submit" class="hcd-primary"><i class="fa-solid fa-floppy-disk"></i> {{localize "HCD.Manager.Save"}}</button>
+  </footer>
+</div>

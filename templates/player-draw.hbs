@@ -1,0 +1,30 @@
+<div class="hcd-pd-panel hcd-deck-{{deck}}">
+  {{#if canHide}}
+  <button type="button" class="hcd-pd-hide" data-pd-hide data-tooltip="HCD.PlayerDraw.Hide">
+    <i class="fa-solid fa-xmark"></i>
+  </button>
+  {{/if}}
+  <h2 class="hcd-pd-title"><i class="{{icon}}"></i> {{title}}</h2>
+  {{#if details}}<p class="hcd-pd-details">{{details}}</p>{{/if}}
+
+  <div class="hcd-pd-slots">
+    {{#each slots}}
+    <div class="hcd-pd-slot{{#if choosable}} hcd-can-choose{{/if}}" data-slot="{{index}}" style="--hcd-i: {{index}}">
+      {{{html}}}
+      {{#if rejected}}<span class="hcd-pd-tag">{{localize "HCD.PlayerDraw.Rejected"}}</span>{{/if}}
+    </div>
+    {{/each}}
+  </div>
+
+  <p class="hcd-pd-status">{{status}}</p>
+
+  {{#if controls.length}}
+  <div class="hcd-pd-controls">
+    {{#each controls}}
+    <button type="button" data-pd-action="{{action}}"{{#if primary}} class="hcd-primary"{{/if}}>
+      <i class="{{icon}}"></i> {{localize label}}
+    </button>
+    {{/each}}
+  </div>
+  {{/if}}
+</div>

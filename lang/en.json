@@ -1,0 +1,199 @@
+{
+  "HCD": {
+    "ModuleShort": "Critical Decks",
+    "Deck": {
+      "hit": "Critical Hit Deck",
+      "fumble": "Critical Fumble Deck"
+    },
+    "CardType": {
+      "general": "General",
+      "specific": "Specific"
+    },
+    "AttackType": {
+      "any": "Any attack type",
+      "melee": "Melee",
+      "ranged": "Ranged",
+      "unarmed": "Unarmed",
+      "spell": "Spell",
+      "none": "General cards only"
+    },
+    "Settings": {
+      "cardManager": {
+        "Name": "Card Manager",
+        "Label": "Manage Cards",
+        "Hint": "Create, edit, import and export the cards of the Critical Hit and Critical Fumble decks."
+      },
+      "enableHitDeck": {
+        "Name": "Enable Critical Hit Deck",
+        "Hint": "Offer a Critical Hit card when an attack meets the trigger conditions below."
+      },
+      "enableFumbleDeck": {
+        "Name": "Enable Critical Fumble Deck",
+        "Hint": "Offer a Critical Fumble card when an attack meets the trigger conditions below."
+      },
+      "triggerAttacks": {
+        "Name": "Trigger on Attack Rolls",
+        "Hint": "Strikes and spell attack rolls can trigger a deck."
+      },
+      "triggerSaves": {
+        "Name": "Trigger on Saving Throws",
+        "Hint": "Saving throws can trigger a deck. Only general cards are drawn for them."
+      },
+      "triggerSkills": {
+        "Name": "Trigger on Skill Checks",
+        "Hint": "Skill and Perception checks can trigger a deck. Only general cards are drawn for them."
+      },
+      "triggerAllRolls": {
+        "Name": "Trigger on Every Roll",
+        "Hint": "Every roll containing a d20 can trigger a deck (initiative, flat checks, plain /roll 1d20, …), regardless of the three settings above. Rolls without a PF2e degree of success can only trigger via natural values."
+      },
+      "triggerMode": {
+        "Name": "Trigger Mode",
+        "Hint": "Decides when a deck is triggered by an attack roll.",
+        "natural": "Natural d20 result (values below)",
+        "degree": "Degree of success (critical success / critical failure)",
+        "either": "Natural value OR critical degree of success",
+        "both": "Natural value AND critical degree of success"
+      },
+      "hitNaturals": {
+        "Name": "Critical Hit: Natural Values",
+        "Hint": "Natural d20 results that trigger the Critical Hit Deck. Comma-separated, ranges allowed, e.g. \"20\" or \"18-20\"."
+      },
+      "fumbleNaturals": {
+        "Name": "Critical Fumble: Natural Values",
+        "Hint": "Natural d20 results that trigger the Critical Fumble Deck. Comma-separated, ranges allowed, e.g. \"1\" or \"1, 2\"."
+      },
+      "triggerActors": {
+        "Name": "Trigger For",
+        "Hint": "Whose attack rolls can trigger a deck.",
+        "players": "Player-owned creatures only",
+        "all": "All creatures (including NPCs)"
+      },
+      "gmPrompt": {
+        "Name": "When Triggered",
+        "Hint": "What happens when an attack triggers a deck.",
+        "ask": "Ask the GM in a private chat message",
+        "auto": "Draw immediately and show the card to the GM"
+      },
+      "playerDraw": {
+        "Name": "Players Draw Themselves",
+        "Hint": "Instead of the GM drawing in private, three face-down cards are dealt in front of everyone and the rolling player picks one. The GM still decides whether a draw happens at all (see \"When Triggered\") and can, after the reveal, accept the card, let the player choose another or deal three new cards."
+      },
+      "useDamageTypes": {
+        "Name": "Differentiate Damage Types",
+        "Hint": "If enabled, specific cards can be bound to a damage type (bludgeoning, slashing, …) and are only drawn for attacks dealing that type. If disabled, all damage types are treated as one and the damage type of a card is ignored."
+      },
+      "deckBehavior": {
+        "Name": "Deck Behavior",
+        "Hint": "Whether revealed cards go back into the deck or stay on a discard pile until the deck runs out.",
+        "replace": "Shuffle back – every draw uses the full deck",
+        "discard": "Discard revealed cards until the deck is empty"
+      },
+      "revealPopup": {
+        "Name": "Reveal Popup",
+        "Hint": "Show revealed cards as an animated popup to all players (in addition to the chat message)."
+      },
+      "animations": {
+        "Name": "Card Animations",
+        "Hint": "Play the draw and flip animations on this client."
+      }
+    },
+    "Prompt": {
+      "Summary": "{actor} rolled a natural {natural}: {details}.",
+      "Question": "Draw a card from the {deck}?",
+      "Draw": "Draw",
+      "Ignore": "Ignore",
+      "State": {
+        "ignored": "Ignored.",
+        "declined": "Card declined.",
+        "revealed": "Revealed: {title}",
+        "playerDrawing": "The player is drawing a card…"
+      }
+    },
+    "Draw": {
+      "Source": "{actor} · {details} · natural {natural}",
+      "Empty": "There are no cards in this deck for this attack type. Add some in the Card Manager.",
+      "Remaining": "{count} card(s) left in this pool",
+      "AttackType": "Attack Type",
+      "Choose": "Pick Card",
+      "Decline": "Decline",
+      "Redraw": "Redraw",
+      "Reveal": "Reveal",
+      "Reshuffled": "The {deck} has been reshuffled.",
+      "Cycled": "You have seen every card of this pool – starting over.",
+      "DamageType": "Damage Type"
+    },
+    "Reveal": {
+      "Caption": "{actor} — {item}",
+      "Hint": "Click anywhere to close"
+    },
+    "Manager": {
+      "Title": "Critical Deck Card Manager",
+      "Hint": "General cards can be drawn for any roll. Specific cards are only drawn for attacks of their attack type – and, if damage types are enabled in the module settings, of their damage type. \"Any\" leaves that criterion open. Saving throws, skill checks and other rolls only draw general cards. Changes are stored when you click Save.",
+      "TestDraw": "Test Draw",
+      "TestDrawHint": "Opens the draw window with the saved cards of this deck.",
+      "AddCard": "Add Card",
+      "Enabled": "Enabled",
+      "TitlePlaceholder": "Card title",
+      "EffectPlaceholder": "Effect text, e.g. \"You trip over a rock and fall prone.\"",
+      "Delete": "Delete card",
+      "NoCards": "No cards yet.",
+      "Import": "Import",
+      "Export": "Export",
+      "Reshuffle": "Reshuffle Decks",
+      "Reshuffled": "All discard piles have been shuffled back into their decks.",
+      "Save": "Save",
+      "Saved": "Cards saved.",
+      "ImportInvalid": "The file does not contain a valid card list.",
+      "ImportQuestion": "The file contains {count} card(s). Add them to the existing cards or replace all existing cards?",
+      "ImportAppend": "Add",
+      "ImportReplace": "Replace All",
+      "Imported": "{count} card(s) imported. Click Save to keep them.",
+      "AttackTypeHint": "Attack type this card is drawn for",
+      "DamageTypeHint": "Damage type this card is drawn for"
+    },
+    "Warn": {
+      "GMOnly": "Only a GM can draw critical cards.",
+      "NotPF2e": "Havoc Critical Decks is built for the Pathfinder 2e system. Automatic triggers will not work in this system."
+    },
+    "DamageType": {
+      "any": "Any damage type",
+      "bludgeoning": "Bludgeoning",
+      "piercing": "Piercing",
+      "slashing": "Slashing",
+      "acid": "Acid",
+      "cold": "Cold",
+      "electricity": "Electricity",
+      "fire": "Fire",
+      "sonic": "Sonic",
+      "force": "Force",
+      "vitality": "Vitality",
+      "void": "Void",
+      "mental": "Mental",
+      "poison": "Poison",
+      "spirit": "Spirit",
+      "bleed": "Bleed"
+    },
+    "RollKind": {
+      "attack": "Attack",
+      "save": "Saving Throw",
+      "skill": "Skill Check",
+      "other": "Roll"
+    },
+    "PlayerDraw": {
+      "Title": "{actor} draws from the {deck}!",
+      "Natural": "natural {natural}",
+      "ChooseYou": "Choose one of the cards!",
+      "Choosing": "{name} is choosing a card…",
+      "Revealed": "Waiting for the GM…",
+      "RevealedGM": "Accept the card, let them choose another one, or deal new cards.",
+      "Accepted": "The card has been accepted.",
+      "Rejected": "Rejected",
+      "Accept": "Accept",
+      "Again": "Choose Another",
+      "Redeal": "Deal Three New Cards",
+      "Cancel": "Cancel",
+      "Hide": "Hide"
+    }
+  }
+}

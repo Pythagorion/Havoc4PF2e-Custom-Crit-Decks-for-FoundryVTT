@@ -1,0 +1,563 @@
+/* ==========================================================================
+   Havoc Critical Decks
+   ========================================================================== */
+
+/* ---------- Card ---------- */
+.hcd-card {
+  --hcd-w: 240px;
+  --hcd-h: 336px;
+  --hcd-primary: #6e1414;
+  --hcd-secondary: #2a0606;
+  --hcd-accent: #e3b94c;
+  --hcd-paper: #f6eedb;
+  --hcd-paper-dark: #e6d6b2;
+  --hcd-ink: #2b1d10;
+
+  width: var(--hcd-w);
+  height: var(--hcd-h);
+  margin: 0 auto;
+  perspective: 1200px;
+  font-family: var(--font-primary, serif);
+}
+
+.hcd-card.hcd-deck-fumble {
+  --hcd-primary: #3d2459;
+  --hcd-secondary: #150a22;
+  --hcd-accent: #a8d86a;
+}
+
+.hcd-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+
+.hcd-face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border: 3px solid var(--hcd-accent);
+  border-radius: 14px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.hcd-front {
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, var(--hcd-paper), var(--hcd-paper-dark));
+  color: var(--hcd-ink);
+}
+
+.hcd-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 7px 10px;
+  background: linear-gradient(135deg, var(--hcd-primary), var(--hcd-secondary));
+  color: var(--hcd-accent);
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hcd-badge {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--hcd-accent);
+  color: var(--hcd-secondary);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.hcd-card-title {
+  margin: 12px 12px 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+  color: var(--hcd-primary);
+  font-size: 20px;
+  line-height: 1.15;
+  text-align: center;
+}
+
+.hcd-card-effect {
+  flex: 1;
+  padding: 4px 14px;
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.hcd-card-footer {
+  padding: 6px;
+  color: var(--hcd-primary);
+  font-size: 18px;
+  text-align: center;
+  opacity: 0.55;
+}
+
+.hcd-back {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  transform: rotateY(180deg);
+  color: var(--hcd-accent);
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.05) 0 6px, transparent 6px 12px),
+    radial-gradient(circle at 50% 40%, var(--hcd-primary), var(--hcd-secondary) 75%);
+  box-shadow:
+    inset 0 0 0 8px var(--hcd-secondary),
+    inset 0 0 0 10px var(--hcd-accent),
+    0 10px 25px rgba(0, 0, 0, 0.45);
+}
+
+.hcd-back i {
+  font-size: 72px;
+  filter: drop-shadow(0 0 12px var(--hcd-accent));
+}
+
+.hcd-back span {
+  padding: 0 20px;
+  line-height: 1.5;
+  text-align: center;
+  font-weight: bold;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* ---------- Animations ---------- */
+.hcd-card.hcd-animate {
+  animation: hcd-deal 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.hcd-card.hcd-animate .hcd-card-inner {
+  animation: hcd-flip 0.7s ease-in-out 0.55s both;
+}
+
+.hcd-card.hcd-animate .hcd-front {
+  animation: hcd-glow 1.2s ease-out 1.2s both;
+}
+
+.hcd-card.hcd-discard {
+  animation: hcd-discard 0.35s ease-in forwards;
+}
+
+@keyframes hcd-deal {
+  from { opacity: 0; transform: translateY(-140px) rotate(-14deg) scale(0.6); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes hcd-flip {
+  from { transform: rotateY(180deg); }
+  to   { transform: rotateY(0deg); }
+}
+
+@keyframes hcd-glow {
+  0%   { box-shadow: 0 0 0 0 var(--hcd-accent), 0 10px 25px rgba(0, 0, 0, 0.45); }
+  35%  { box-shadow: 0 0 32px 8px var(--hcd-accent), 0 10px 25px rgba(0, 0, 0, 0.45); }
+  100% { box-shadow: 0 0 0 0 transparent, 0 10px 25px rgba(0, 0, 0, 0.45); }
+}
+
+@keyframes hcd-discard {
+  to { opacity: 0; transform: translateX(160px) rotate(18deg) scale(0.9); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hcd-card.hcd-animate,
+  .hcd-card.hcd-animate .hcd-card-inner,
+  .hcd-card.hcd-animate .hcd-front,
+  .hcd-card.hcd-discard {
+    animation: none;
+  }
+}
+
+/* ---------- Flat card (chat) ---------- */
+.hcd-card.hcd-flat {
+  --hcd-w: auto;
+  --hcd-h: auto;
+  perspective: none;
+}
+
+.hcd-flat .hcd-card-inner { transform-style: flat; }
+
+.hcd-flat .hcd-face {
+  position: relative;
+  border-width: 2px;
+  box-shadow: none;
+}
+
+.hcd-flat .hcd-card-effect { overflow: visible; }
+
+.hcd-chat-reveal .hcd-caption {
+  margin: 0 0 6px;
+  font-style: italic;
+  text-align: center;
+}
+
+/* ---------- GM prompt (chat) ---------- */
+.hcd-prompt {
+  --hcd-accent: #8b1a1a;
+  padding-left: 8px;
+  border-left: 4px solid var(--hcd-accent);
+}
+
+.hcd-prompt.hcd-deck-fumble { --hcd-accent: #5b3a85; }
+
+.hcd-prompt-header {
+  color: var(--hcd-accent);
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.hcd-prompt-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.hcd-prompt-state {
+  font-style: italic;
+  opacity: 0.8;
+}
+
+/* ---------- Draw window ---------- */
+.hcd-draw {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hcd-draw-source {
+  margin: 0;
+  font-style: italic;
+  text-align: center;
+}
+
+.hcd-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(336px + 24px);
+  padding: 12px 0;
+}
+
+.hcd-draw-meta {
+  margin: 0;
+  font-size: var(--font-size-12, 12px);
+  text-align: center;
+  opacity: 0.75;
+}
+
+.hcd-draw-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.hcd-draw-buttons button {
+  flex: 1;
+  white-space: nowrap;
+}
+
+.havoc-critdeck .hcd-primary {
+  font-weight: bold;
+}
+
+.hcd-empty {
+  font-style: italic;
+  text-align: center;
+  opacity: 0.75;
+}
+
+/* ---------- Reveal overlay (players) ---------- */
+.hcd-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+  animation: hcd-fade-in 0.3s ease-out both;
+}
+
+.hcd-overlay.hcd-closing {
+  animation: hcd-fade-out 0.3s ease-in both;
+}
+
+.hcd-overlay-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.hcd-overlay .hcd-card {
+  --hcd-w: 300px;
+  --hcd-h: 420px;
+}
+
+.hcd-overlay .hcd-card-title { font-size: 24px; }
+.hcd-overlay .hcd-card-effect { font-size: 15px; }
+
+.hcd-overlay-caption {
+  margin: 0;
+  color: #fff;
+  font-size: 18px;
+  text-shadow: 0 2px 4px #000;
+}
+
+.hcd-overlay-hint {
+  margin: 0;
+  color: #ccc;
+  font-size: 12px;
+}
+
+@keyframes hcd-fade-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes hcd-fade-out { from { opacity: 1; } to { opacity: 0; } }
+
+/* ---------- Card manager ---------- */
+.hcd-manager .window-content {
+  padding: 0;
+}
+
+.hcd-manager-wrap {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.hcd-manager-body {
+  flex: 1;
+  padding: 8px 12px;
+  overflow-y: auto;
+}
+
+.hcd-section { margin-bottom: 16px; }
+
+.hcd-section-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.hcd-section-header h3 {
+  flex: 1;
+  margin: 0;
+}
+
+.hcd-section-header button {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+.hcd-count { opacity: 0.6; font-weight: normal; }
+
+.hcd-card-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+  padding: 6px;
+  border: 1px solid var(--color-border, rgba(0, 0, 0, 0.3));
+  border-left: 4px solid #8b1a1a;
+  border-radius: 6px;
+}
+
+.hcd-deck-fumble .hcd-card-row { border-left-color: #5b3a85; }
+.hcd-card-row.hcd-disabled { opacity: 0.55; }
+
+.hcd-row-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hcd-row-top input[type="text"] { flex: 1; }
+.hcd-row-top select { flex: 0 0 120px; }
+
+.hcd-row-top button.icon {
+  flex: 0 0 auto;
+  width: 28px;
+}
+
+.hcd-card-row textarea {
+  width: 100%;
+  min-height: 56px;
+  resize: vertical;
+}
+
+.hcd-manager-footer {
+  display: flex;
+  gap: 6px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--color-border, rgba(0, 0, 0, 0.3));
+}
+
+.hcd-manager-footer button { flex: 1; }
+
+/* ---------- Player draw (public card spread) ---------- */
+.hcd-pd-overlay {
+  cursor: default;
+}
+
+.hcd-pd-overlay.hcd-pd-done {
+  cursor: pointer;
+}
+
+.hcd-pd-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: calc(100vw - 32px);
+  padding: 16px 24px;
+}
+
+.hcd-pd-title {
+  margin: 0;
+  border: none;
+  color: #fff;
+  font-size: 26px;
+  text-align: center;
+  text-shadow: 0 2px 6px #000;
+}
+
+.hcd-pd-details,
+.hcd-pd-status {
+  margin: 0;
+  color: #ddd;
+  text-align: center;
+  text-shadow: 0 1px 3px #000;
+}
+
+.hcd-pd-status {
+  min-height: 1.4em;
+  color: #fff;
+  font-size: 16px;
+}
+
+.hcd-pd-hide {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.hcd-pd-slots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px;
+  padding: 18px 0;
+}
+
+.hcd-pd-slot {
+  position: relative;
+  transition: transform 0.2s ease-out;
+}
+
+.hcd-pd-slot .hcd-card {
+  --hcd-w: 190px;
+  --hcd-h: 266px;
+}
+
+.hcd-pd-slot .hcd-card-title { font-size: 17px; }
+.hcd-pd-slot .hcd-card-effect { font-size: 12px; }
+
+/* Face-down card, waiting to be chosen */
+.hcd-card.hcd-facedown .hcd-card-inner {
+  transform: rotateY(180deg);
+}
+
+.hcd-pd-slot.hcd-can-choose {
+  cursor: pointer;
+}
+
+.hcd-pd-slot.hcd-can-choose:hover {
+  transform: translateY(-16px) scale(1.04);
+}
+
+.hcd-pd-slot.hcd-can-choose:hover .hcd-back {
+  box-shadow:
+    inset 0 0 0 8px var(--hcd-secondary),
+    inset 0 0 0 10px var(--hcd-accent),
+    0 0 28px 8px var(--hcd-accent);
+}
+
+/* Dealing: cards fly in from a pile above the middle, one after another */
+.hcd-card.hcd-dealt {
+  animation: hcd-deal-spread 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) calc(var(--hcd-i, 0) * 0.2s) both;
+}
+
+@keyframes hcd-deal-spread {
+  from {
+    opacity: 0;
+    transform: translate(calc((1 - var(--hcd-i, 0)) * 214px), -60vh) rotate(-25deg) scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Chosen card turns over */
+.hcd-card.hcd-flipping .hcd-card-inner {
+  animation: hcd-flip 0.7s ease-in-out both;
+}
+
+.hcd-card.hcd-flipping .hcd-front {
+  animation: hcd-glow 1.2s ease-out 0.6s both;
+}
+
+/* Rejected cards, and the cards not taken once the GM accepted */
+.hcd-card.hcd-unchosen {
+  opacity: 0.4;
+  filter: grayscale(0.7);
+  transition: opacity 0.4s, filter 0.4s;
+}
+
+.hcd-pd-tag {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  padding: 2px 10px;
+  border: 2px solid #c33;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #f66;
+  font-weight: bold;
+  text-transform: uppercase;
+  transform: translate(-50%, -50%) rotate(-12deg);
+}
+
+.hcd-pd-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.hcd-pd-controls button {
+  width: auto;
+  padding: 4px 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hcd-card.hcd-dealt,
+  .hcd-card.hcd-flipping .hcd-card-inner,
+  .hcd-card.hcd-flipping .hcd-front {
+    animation: none;
+  }
+}

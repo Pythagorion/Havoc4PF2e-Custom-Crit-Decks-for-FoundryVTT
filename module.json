@@ -1,0 +1,30 @@
+{
+  "id": "havoc-critdeck",
+  "title": "Havoc4PF2e: Custom Critical Decks - for PF2e",
+  "description": "Module to create and use Critical Decks (Fumble & Hit) for PF2e",
+  "authors": [
+    {
+      "name": "Pythagorion"
+    }
+  ],
+  "version": "1.0.1",
+  "compatibility": {
+    "minimum": "14",
+    "verified": "14"
+  },
+  "relationships": {
+    "systems": [
+      {
+        "id": "pf2e",
+        "type": "system"
+      }
+    ]
+  },
+  "esmodules": ["scripts/main.js"],
+  "styles": ["styles/critdeck.css"],
+  "languages": [
+    { "lang": "en", "name": "English", "path": "lang/en.json" },
+    { "lang": "de", "name": "Deutsch", "path": "lang/de.json" }
+  ],
+  "socket": true
+}

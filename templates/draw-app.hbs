@@ -1,0 +1,50 @@
+<div class="hcd-draw hcd-deck-{{deck}}">
+  {{#if sourceLine}}<p class="hcd-draw-source">{{sourceLine}}</p>{{/if}}
+
+  <div class="hcd-stage">
+    {{#if cardHTML}}
+      {{{cardHTML}}}
+    {{else}}
+      <p class="hcd-empty">{{localize "HCD.Draw.Empty"}}</p>
+    {{/if}}
+  </div>
+
+  <p class="hcd-draw-meta">{{remaining}}</p>
+
+  <div class="form-group">
+    <label>{{localize "HCD.Draw.AttackType"}}</label>
+    <select name="attackType">
+      {{selectOptions attackChoices selected=attackType localize=true}}
+    </select>
+  </div>
+
+  {{#if useDamageTypes}}
+  <div class="form-group">
+    <label>{{localize "HCD.Draw.DamageType"}}</label>
+    <select name="damageType">
+      {{selectOptions damageChoices selected=damageType localize=true}}
+    </select>
+  </div>
+  {{/if}}
+
+  {{#if pool.length}}
+  <div class="form-group">
+    <label>{{localize "HCD.Draw.Choose"}}</label>
+    <select name="choose">
+      {{#each pool}}<option value="{{id}}" {{#if current}}selected{{/if}}>{{label}}</option>{{/each}}
+    </select>
+  </div>
+  {{/if}}
+
+  <footer class="hcd-draw-buttons">
+    <button type="button" data-action="decline">
+      <i class="fa-solid fa-ban"></i> {{localize "HCD.Draw.Decline"}}
+    </button>
+    <button type="button" data-action="redraw" {{#unless canRedraw}}disabled{{/unless}}>
+      <i class="fa-solid fa-rotate"></i> {{localize "HCD.Draw.Redraw"}}
+    </button>
+    <button type="button" data-action="reveal" class="hcd-primary" {{#unless cardHTML}}disabled{{/unless}}>
+      <i class="fa-solid fa-eye"></i> {{localize "HCD.Draw.Reveal"}}
+    </button>
+  </footer>
+</div>

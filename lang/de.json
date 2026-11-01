@@ -1,0 +1,199 @@
+{
+  "HCD": {
+    "ModuleShort": "Kritische Decks",
+    "Deck": {
+      "hit": "Kritischer-Treffer-Deck",
+      "fumble": "Kritischer-Patzer-Deck"
+    },
+    "CardType": {
+      "general": "Allgemein",
+      "specific": "Spezifisch"
+    },
+    "AttackType": {
+      "any": "Beliebige Angriffsart",
+      "melee": "Nahkampf",
+      "ranged": "Fernkampf",
+      "unarmed": "Waffenlos",
+      "spell": "Zauber",
+      "none": "Nur allgemeine Karten"
+    },
+    "Settings": {
+      "cardManager": {
+        "Name": "Kartenverwaltung",
+        "Label": "Karten verwalten",
+        "Hint": "Karten der Decks für kritische Treffer und Patzer erstellen, bearbeiten, importieren und exportieren."
+      },
+      "enableHitDeck": {
+        "Name": "Kritischer-Treffer-Deck aktivieren",
+        "Hint": "Bietet eine Karte für kritische Treffer an, wenn ein Angriff die Auslösebedingungen unten erfüllt."
+      },
+      "enableFumbleDeck": {
+        "Name": "Kritischer-Patzer-Deck aktivieren",
+        "Hint": "Bietet eine Patzer-Karte an, wenn ein Angriff die Auslösebedingungen unten erfüllt."
+      },
+      "triggerAttacks": {
+        "Name": "Bei Angriffswürfen auslösen",
+        "Hint": "Waffen- und Zauberangriffswürfe können ein Deck auslösen."
+      },
+      "triggerSaves": {
+        "Name": "Bei Rettungswürfen auslösen",
+        "Hint": "Rettungswürfe können ein Deck auslösen. Dabei werden nur allgemeine Karten gezogen."
+      },
+      "triggerSkills": {
+        "Name": "Bei Fertigkeitswürfen auslösen",
+        "Hint": "Fertigkeits- und Wahrnehmungswürfe können ein Deck auslösen. Dabei werden nur allgemeine Karten gezogen."
+      },
+      "triggerAllRolls": {
+        "Name": "Bei jedem Wurf auslösen",
+        "Hint": "Jeder Wurf mit einem W20 kann ein Deck auslösen (Initiative, Pauschalwürfe, einfaches /roll 1d20, …), unabhängig von den drei Einstellungen oben. Würfe ohne PF2e-Erfolgsgrad können nur über natürliche Werte auslösen."
+      },
+      "triggerMode": {
+        "Name": "Auslösemodus",
+        "Hint": "Legt fest, wann ein Angriffswurf ein Deck auslöst.",
+        "natural": "Natürliches W20-Ergebnis (Werte unten)",
+        "degree": "Erfolgsgrad (kritischer Erfolg / kritischer Fehlschlag)",
+        "either": "Natürlicher Wert ODER kritischer Erfolgsgrad",
+        "both": "Natürlicher Wert UND kritischer Erfolgsgrad"
+      },
+      "hitNaturals": {
+        "Name": "Kritischer Treffer: Natürliche Werte",
+        "Hint": "Natürliche W20-Ergebnisse, die das Treffer-Deck auslösen. Kommagetrennt, Bereiche erlaubt, z. B. \"20\" oder \"18-20\"."
+      },
+      "fumbleNaturals": {
+        "Name": "Kritischer Patzer: Natürliche Werte",
+        "Hint": "Natürliche W20-Ergebnisse, die das Patzer-Deck auslösen. Kommagetrennt, Bereiche erlaubt, z. B. \"1\" oder \"1, 2\"."
+      },
+      "triggerActors": {
+        "Name": "Auslösen für",
+        "Hint": "Wessen Angriffswürfe ein Deck auslösen können.",
+        "players": "Nur Kreaturen von Spielern",
+        "all": "Alle Kreaturen (inkl. NSCs)"
+      },
+      "gmPrompt": {
+        "Name": "Beim Auslösen",
+        "Hint": "Was passiert, wenn ein Angriff ein Deck auslöst.",
+        "ask": "SL per privater Chatnachricht fragen",
+        "auto": "Sofort ziehen und die Karte dem SL zeigen"
+      },
+      "playerDraw": {
+        "Name": "Spieler ziehen selbst",
+        "Hint": "Statt dass der SL privat zieht, werden vor allen drei verdeckte Karten ausgelegt und der würfelnde Spieler wählt eine aus. Der SL entscheidet weiterhin, ob überhaupt gezogen wird (siehe \"Beim Auslösen\"), und kann nach dem Aufdecken die Karte annehmen, eine andere wählen lassen oder drei neue Karten austeilen."
+      },
+      "useDamageTypes": {
+        "Name": "Schadensarten unterscheiden",
+        "Hint": "Wenn aktiviert, können spezifische Karten an eine Schadensart (Wucht, Hieb, …) gebunden werden und werden nur bei Angriffen mit dieser Schadensart gezogen. Wenn deaktiviert, werden alle Schadensarten zusammengefasst und die Schadensart einer Karte ignoriert."
+      },
+      "deckBehavior": {
+        "Name": "Deck-Verhalten",
+        "Hint": "Ob aufgedeckte Karten zurück ins Deck gehen oder auf einem Ablagestapel bleiben, bis das Deck leer ist.",
+        "replace": "Zurückmischen – jeder Zug nutzt das volle Deck",
+        "discard": "Aufgedeckte Karten ablegen, bis das Deck leer ist"
+      },
+      "revealPopup": {
+        "Name": "Aufdeck-Popup",
+        "Hint": "Aufgedeckte Karten allen Spielern als animiertes Popup zeigen (zusätzlich zur Chatnachricht)."
+      },
+      "animations": {
+        "Name": "Kartenanimationen",
+        "Hint": "Zieh- und Umdreh-Animationen auf diesem Client abspielen."
+      }
+    },
+    "Prompt": {
+      "Summary": "{actor} hat eine natürliche {natural} gewürfelt: {details}.",
+      "Question": "Eine Karte aus dem {deck} ziehen?",
+      "Draw": "Ziehen",
+      "Ignore": "Ignorieren",
+      "State": {
+        "ignored": "Ignoriert.",
+        "declined": "Karte abgelehnt.",
+        "revealed": "Aufgedeckt: {title}",
+        "playerDrawing": "Der Spieler zieht eine Karte …"
+      }
+    },
+    "Draw": {
+      "Source": "{actor} · {details} · natürliche {natural}",
+      "Empty": "Für diese Angriffsart gibt es keine Karten in diesem Deck. Füge welche in der Kartenverwaltung hinzu.",
+      "Remaining": "{count} Karte(n) in diesem Stapel übrig",
+      "AttackType": "Angriffsart",
+      "Choose": "Karte wählen",
+      "Decline": "Ablehnen",
+      "Redraw": "Neu ziehen",
+      "Reveal": "Aufdecken",
+      "Reshuffled": "Das {deck} wurde neu gemischt.",
+      "Cycled": "Du hast alle Karten dieses Stapels gesehen – es geht von vorne los.",
+      "DamageType": "Schadensart"
+    },
+    "Reveal": {
+      "Caption": "{actor} — {item}",
+      "Hint": "Zum Schließen irgendwo klicken"
+    },
+    "Manager": {
+      "Title": "Kartenverwaltung – Kritische Decks",
+      "Hint": "Allgemeine Karten können bei jedem Wurf gezogen werden. Spezifische Karten nur bei Angriffen ihrer Angriffsart – und, falls Schadensarten in den Moduleinstellungen aktiviert sind, ihrer Schadensart. \"Beliebig\" lässt das Kriterium offen. Bei Rettungswürfen, Fertigkeitswürfen und anderen Würfen werden nur allgemeine Karten gezogen. Änderungen werden mit Speichern übernommen.",
+      "TestDraw": "Testziehen",
+      "TestDrawHint": "Öffnet das Ziehfenster mit den gespeicherten Karten dieses Decks.",
+      "AddCard": "Karte hinzufügen",
+      "Enabled": "Aktiv",
+      "TitlePlaceholder": "Kartentitel",
+      "EffectPlaceholder": "Effekttext, z. B. \"Du stolperst über einen Stein und gehst zu Boden.\"",
+      "Delete": "Karte löschen",
+      "NoCards": "Noch keine Karten.",
+      "Import": "Importieren",
+      "Export": "Exportieren",
+      "Reshuffle": "Decks neu mischen",
+      "Reshuffled": "Alle Ablagestapel wurden zurück in ihre Decks gemischt.",
+      "Save": "Speichern",
+      "Saved": "Karten gespeichert.",
+      "ImportInvalid": "Die Datei enthält keine gültige Kartenliste.",
+      "ImportQuestion": "Die Datei enthält {count} Karte(n). Zu den vorhandenen Karten hinzufügen oder alle vorhandenen Karten ersetzen?",
+      "ImportAppend": "Hinzufügen",
+      "ImportReplace": "Alle ersetzen",
+      "Imported": "{count} Karte(n) importiert. Klicke auf Speichern, um sie zu behalten.",
+      "AttackTypeHint": "Angriffsart, für die diese Karte gezogen wird",
+      "DamageTypeHint": "Schadensart, für die diese Karte gezogen wird"
+    },
+    "Warn": {
+      "GMOnly": "Nur ein SL kann kritische Karten ziehen.",
+      "NotPF2e": "Havoc Critical Decks ist für das System Pathfinder 2e gebaut. Automatische Auslöser funktionieren in diesem System nicht."
+    },
+    "DamageType": {
+      "any": "Beliebige Schadensart",
+      "bludgeoning": "Wucht",
+      "piercing": "Stich",
+      "slashing": "Hieb",
+      "acid": "Säure",
+      "cold": "Kälte",
+      "electricity": "Elektrizität",
+      "fire": "Feuer",
+      "sonic": "Schall",
+      "force": "Energie",
+      "vitality": "Vitalität",
+      "void": "Leere",
+      "mental": "Geist",
+      "poison": "Gift",
+      "spirit": "Spirituell",
+      "bleed": "Blutung"
+    },
+    "RollKind": {
+      "attack": "Angriff",
+      "save": "Rettungswurf",
+      "skill": "Fertigkeitswurf",
+      "other": "Wurf"
+    },
+    "PlayerDraw": {
+      "Title": "{actor} zieht aus dem {deck}!",
+      "Natural": "natürliche {natural}",
+      "ChooseYou": "Wähle eine der Karten!",
+      "Choosing": "{name} wählt eine Karte …",
+      "Revealed": "Warte auf den SL …",
+      "RevealedGM": "Karte annehmen, eine andere wählen lassen oder neue Karten austeilen.",
+      "Accepted": "Die Karte wurde angenommen.",
+      "Rejected": "Abgelehnt",
+      "Accept": "Annehmen",
+      "Again": "Andere wählen",
+      "Redeal": "Drei neue Karten",
+      "Cancel": "Abbrechen",
+      "Hide": "Ausblenden"
+    }
+  }
+}

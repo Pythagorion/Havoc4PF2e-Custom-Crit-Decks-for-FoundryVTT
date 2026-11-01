@@ -1,0 +1,19 @@
+<div class="hcd-card hcd-deck-{{deck}}{{#if flat}} hcd-flat{{/if}}{{#if animate}} hcd-animate{{/if}} {{extraClasses}}">
+  <div class="hcd-card-inner">
+    <div class="hcd-face hcd-front">
+      <header class="hcd-card-header">
+        <span class="hcd-deck-name"><i class="{{icon}}"></i> {{deckLabel}}</span>
+        <span class="hcd-badge hcd-badge-{{badge}}">{{typeLabel}}</span>
+      </header>
+      <h2 class="hcd-card-title">{{title}}</h2>
+      <div class="hcd-card-effect">{{{effectHTML}}}</div>
+      <footer class="hcd-card-footer"><i class="{{icon}}"></i></footer>
+    </div>
+    {{#unless flat}}
+    <div class="hcd-face hcd-back">
+      <i class="{{icon}}"></i>
+      <span>{{deckLabel}}</span>
+    </div>
+    {{/unless}}
+  </div>
+</div>
