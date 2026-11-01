@@ -19,3 +19,7 @@ This module is NOT a Zero AI module. I used AI while developing this module in t
 - Help with Documentation: While this README is written by myself, Claude helped me with documenting the code itself. I wrote the initial comments for the functions just for me. As I am not really good in documenting code for others, I asked Claude to revise my code comments so that others could understand what I was doing (or what the code does)
 
 I did NOT vibe code this module and I will NOT accept any merge requests which were vibe coded.
+
+## License & Legal Notice:
+- **The Code:** The source code of Havoc4PF2e is licensed under the MIT License (as stated in the LINCENSE.MD of this repository).
+- **Compatibility & Content:** Havoc4PF2e is an independent module for Foundry VTT and is not affiliated with or endorsed by Paizo Inc. Pathfinder and associated marks/logos are trademarks of Paizo Inc. This product uses Open Game Content under the Open Game License v1.0a / ORC License. The FoundryVTT software and its associated marks/logos are trademarks of Foundry Gaming, LLC. All rights belong to their respective owners.
