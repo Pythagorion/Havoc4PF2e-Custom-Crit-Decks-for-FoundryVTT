@@ -112,6 +112,7 @@
     },
     "Draw": {
       "Source": "{actor} · {details} · natural {natural}",
+      "SourceManual": "{actor} · {details}",
       "Empty": "There are no cards in this deck for this attack type. Add some in the Card Manager.",
       "Remaining": "{count} card(s) left in this pool",
       "AttackType": "Attack Type",
@@ -178,7 +179,17 @@
       "attack": "Attack",
       "save": "Saving Throw",
       "skill": "Skill Check",
-      "other": "Roll"
+      "other": "Roll",
+      "manual": "Drawn by the GM"
+    },
+    "Manual": {
+      "Title": "Draw a Critical Card",
+      "Hint": "Draw a card without a roll. The draw works like a triggered one, so you can still decline the card afterwards.",
+      "Deck": "Deck",
+      "Actor": "Creature",
+      "NoActor": "— none —",
+      "Chooser": "Card Is Picked By",
+      "ChooserGM": "GM (me)"
     },
     "PlayerDraw": {
       "Title": "{actor} draws from the {deck}!",

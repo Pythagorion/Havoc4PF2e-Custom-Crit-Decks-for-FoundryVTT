@@ -166,8 +166,9 @@ export async function reshuffle(deck = null) {
  * @param {{rollKind?: string, attackType?: string, damageTypes?: string[], info?: object}} trigger
  */
 export function describeTrigger({ rollKind = "attack", attackType = null, damageTypes = [], info = {} }) {
-  if (rollKind !== "attack") return localize(ROLL_KIND_LABELS[rollKind] ?? ROLL_KIND_LABELS.other);
-  const parts = [info.itemName || localize(ROLL_KIND_LABELS.attack)];
+  // Manual draws (no roll) are described like attacks, so a chosen attack/damage type shows up
+  if (rollKind !== "attack" && rollKind !== "manual") return localize(ROLL_KIND_LABELS[rollKind] ?? ROLL_KIND_LABELS.other);
+  const parts = [info.itemName || localize(ROLL_KIND_LABELS[rollKind])];
   if (attackType in ATTACK_TYPES) parts.push(localize(ATTACK_TYPES[attackType]));
   if (getSetting("useDamageTypes") && damageTypes.length) parts.push(damageTypes.map(damageTypeLabel).join("/"));
   return parts.join(" · ");

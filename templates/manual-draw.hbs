@@ -1,0 +1,42 @@
+<div class="hcd-manual-draw">
+  <p class="hint">{{localize "HCD.Manual.Hint"}}</p>
+
+  <div class="form-group">
+    <label>{{localize "HCD.Manual.Deck"}}</label>
+    <select name="deck">
+      {{selectOptions deckChoices selected=deck localize=true}}
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>{{localize "HCD.Draw.AttackType"}}</label>
+    <select name="attackType">
+      {{selectOptions attackChoices selected=attackType localize=true}}
+    </select>
+  </div>
+
+  {{#if useDamageTypes}}
+  <div class="form-group">
+    <label>{{localize "HCD.Draw.DamageType"}}</label>
+    <select name="damageType">
+      {{selectOptions damageChoices selected=damageType localize=true}}
+    </select>
+  </div>
+  {{/if}}
+
+  <div class="form-group">
+    <label>{{localize "HCD.Manual.Actor"}}</label>
+    <select name="actorUuid">
+      {{selectOptions actorChoices selected=actorUuid}}
+    </select>
+  </div>
+
+  {{#if playerDraw}}
+  <div class="form-group">
+    <label>{{localize "HCD.Manual.Chooser"}}</label>
+    <select name="chooserId">
+      {{selectOptions chooserChoices selected=chooserId}}
+    </select>
+  </div>
+  {{/if}}
+</div>

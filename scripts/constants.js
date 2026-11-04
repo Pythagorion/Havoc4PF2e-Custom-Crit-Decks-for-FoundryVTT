@@ -7,7 +7,8 @@ export const TEMPLATES = {
   draw: `${TEMPLATE_PATH}/draw-app.hbs`,
   manager: `${TEMPLATE_PATH}/card-manager.hbs`,
   prompt: `${TEMPLATE_PATH}/gm-prompt.hbs`,
-  playerDraw: `${TEMPLATE_PATH}/player-draw.hbs`
+  playerDraw: `${TEMPLATE_PATH}/player-draw.hbs`,
+  manualDraw: `${TEMPLATE_PATH}/manual-draw.hbs`
 };
 
 /** Number of face-down cards dealt when players draw themselves. */
@@ -44,7 +45,8 @@ export const ROLL_KIND_LABELS = {
   attack: "HCD.RollKind.attack",
   save: "HCD.RollKind.save",
   skill: "HCD.RollKind.skill",
-  other: "HCD.RollKind.other"
+  other: "HCD.RollKind.other",
+  manual: "HCD.RollKind.manual"
 };
 
 /** Filter value meaning "only general cards may be drawn" (rolls without an attack type). */

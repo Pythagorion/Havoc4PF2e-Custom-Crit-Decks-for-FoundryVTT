@@ -7,6 +7,7 @@ import { beginDraw, onPlayerDrawSocket, startPlayerDraw } from "./player-draw.js
 import { drawCard, getCards, reshuffle } from "./deck.js";
 import { openDrawApp } from "./apps/card-draw.js";
 import { CardManager } from "./apps/card-manager.js";
+import { openManualDraw } from "./manual-draw.js";
 import { localize } from "./utils.js";
 
 Hooks.once("init", () => {
@@ -20,6 +21,8 @@ Hooks.once("init", () => {
     startPlayerDraw,
     /** Draw the way the module settings want (GM window or player draw) */
     beginDraw,
+    /** Ask the GM for deck, attack type and creature, then draw without a roll (used by the bundled macro) */
+    manualDraw: openManualDraw,
     openManager: () => new CardManager().render({ force: true }),
     drawCard,
     revealCard,

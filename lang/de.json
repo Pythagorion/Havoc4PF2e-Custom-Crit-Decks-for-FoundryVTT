@@ -112,6 +112,7 @@
     },
     "Draw": {
       "Source": "{actor} · {details} · natürliche {natural}",
+      "SourceManual": "{actor} · {details}",
       "Empty": "Für diese Angriffsart gibt es keine Karten in diesem Deck. Füge welche in der Kartenverwaltung hinzu.",
       "Remaining": "{count} Karte(n) in diesem Stapel übrig",
       "AttackType": "Angriffsart",
@@ -178,7 +179,17 @@
       "attack": "Angriff",
       "save": "Rettungswurf",
       "skill": "Fertigkeitswurf",
-      "other": "Wurf"
+      "other": "Wurf",
+      "manual": "Vom SL gezogen"
+    },
+    "Manual": {
+      "Title": "Kritische Karte ziehen",
+      "Hint": "Ziehe eine Karte ohne Wurf. Das Ziehen läuft wie bei einem ausgelösten Wurf ab, du kannst die Karte also danach noch ablehnen.",
+      "Deck": "Deck",
+      "Actor": "Kreatur",
+      "NoActor": "— keine —",
+      "Chooser": "Karte wählt",
+      "ChooserGM": "SL (ich)"
     },
     "PlayerDraw": {
       "Title": "{actor} zieht aus dem {deck}!",

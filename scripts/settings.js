@@ -48,7 +48,7 @@ export function registerSettings() {
     default: "ask",
     choices: choices("gmPrompt", ["ask", "auto"])
   });
-  register("playerDraw", { type: Boolean, default: false });
+  register("playerDraw", { type: Boolean, default: true });
   register("useDamageTypes", { type: Boolean, default: false });
   register("deckBehavior", {
     type: String,
@@ -70,5 +70,4 @@ export function registerSettings() {
     config: false,
     type: Object,
     default: { hit: [], fumble: [] }
-  });
-}
+  });}

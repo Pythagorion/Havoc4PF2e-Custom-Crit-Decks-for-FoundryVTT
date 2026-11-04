@@ -84,9 +84,7 @@ export class CardDrawApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const useDamageTypes = getSetting("useDamageTypes");
     return Object.assign(context, {
       deck: this.deck,
-      sourceLine: this.info.actorName
-        ? format("HCD.Draw.Source", { actor: this.info.actorName, details: describeTrigger(this), natural: this.info.natural })
-        : "",
+      sourceLine: this.#sourceLine(),
       cardHTML: this.card ? await renderCardHTML(this.card, { animate }) : null,
       pool: pool.map((c) => ({ id: c.id, label: `${c.title} (${cardTypeLabel(c)})`, current: c.id === this.card?.id })),
       attackChoices: { "": "HCD.AttackType.any", [GENERAL_ONLY]: "HCD.AttackType.none", ...ATTACK_TYPES },
@@ -98,6 +96,14 @@ export class CardDrawApp extends HandlebarsApplicationMixin(ApplicationV2) {
       remaining: format("HCD.Draw.Remaining", { count: countRemaining(this.deck, this.filter) }),
       canRedraw: pool.length > 1
     });
+  }
+
+  /** "Actor · details · natural 20"; manual draws have no natural value. */
+  #sourceLine() {
+    const { actorName, natural } = this.info;
+    if (!actorName) return "";
+    const data = { actor: actorName, details: describeTrigger(this), natural };
+    return format(natural != null ? "HCD.Draw.Source" : "HCD.Draw.SourceManual", data);
   }
 
   _onRender(context, options) {

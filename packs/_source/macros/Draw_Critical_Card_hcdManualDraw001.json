@@ -1,0 +1,19 @@
+{
+  "_id": "hcdManualDraw001",
+  "_key": "!macros!hcdManualDraw001",
+  "name": "Draw Critical Card",
+  "type": "script",
+  "scope": "global",
+  "img": "icons/svg/card-hand.svg",
+  "command": "// Draw a card from the Critical Hit or Fumble Deck without a roll (GM only).\n// The draw works like a triggered one, so the card can still be declined afterwards.\ngame.modules.get(\"havoc-critdeck\").api.manualDraw();",
+  "folder": null,
+  "sort": 0,
+  "ownership": {
+    "default": 0
+  },
+  "flags": {
+    "havoc-critdeck": {
+      "manualDraw": true
+    }
+  }
+}

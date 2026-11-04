@@ -27,7 +27,11 @@ export function beginDraw(trigger) {
 /*  GM side                                     */
 /* -------------------------------------------- */
 
-export async function startPlayerDraw({ deck, rollKind = "attack", attackType = null, damageTypes = [], info = {}, promptMessageId = null }) {
+/**
+ * @param {object} trigger
+ * @param {string} [trigger.chooserId]  User who picks the card; found from `info` if omitted.
+ */
+export async function startPlayerDraw({ deck, rollKind = "attack", attackType = null, damageTypes = [], info = {}, promptMessageId = null, chooserId = null }) {
   if (!game.user.isGM) return ui.notifications.warn(localize("HCD.Warn.GMOnly"));
   const session = {
     id: foundry.utils.randomID(),
@@ -38,7 +42,7 @@ export async function startPlayerDraw({ deck, rollKind = "attack", attackType = 
     filter: { attackType, damageTypes },
     info,
     promptMessageId,
-    chooserId: findChooser(info),
+    chooserId: game.users.get(chooserId)?.id ?? findChooser(info),
     seen: new Set(),
     slots: [],
     phase: "choosing",
@@ -254,7 +258,10 @@ class PlayerDrawOverlay {
       title: state.info.actorName
         ? format("HCD.PlayerDraw.Title", { actor: state.info.actorName, deck: deckLabel })
         : deckLabel,
-      details: state.info.actorName ? `${describeTrigger(state)} · ${format("HCD.PlayerDraw.Natural", { natural: state.info.natural })}` : "",
+      details: state.info.actorName
+        ? [describeTrigger(state), state.info.natural != null ? format("HCD.PlayerDraw.Natural", { natural: state.info.natural }) : null]
+          .filter(Boolean).join(" · ")
+        : "",
       slots,
       status: this.#statusText(state, isChooser, chooserName),
       canHide: !game.user.isGM && state.phase !== "done",

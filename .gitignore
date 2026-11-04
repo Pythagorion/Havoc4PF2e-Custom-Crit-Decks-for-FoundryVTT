@@ -1,0 +1,6 @@
+node_modules/
+
+# LevelDB runtime files written while Foundry has a pack open
+packs/*/LOCK
+packs/*/LOG
+packs/*/LOG.old

@@ -1,0 +1,13 @@
+{
+  "name": "havoc-critdeck",
+  "private": true,
+  "type": "module",
+  "description": "Build tooling for the Havoc4PF2e Custom Critical Decks Foundry VTT module",
+  "scripts": {
+    "pack": "node tools/packs.mjs pack",
+    "unpack": "node tools/packs.mjs unpack"
+  },
+  "devDependencies": {
+    "@foundryvtt/foundryvtt-cli": "^1.0.4"
+  }
+}
