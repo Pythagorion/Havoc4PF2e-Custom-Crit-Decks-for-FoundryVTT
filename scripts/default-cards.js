@@ -289,7 +289,7 @@ export const DEFAULT_CARDS = [
   { id: "hcdFumMelee00005", deck: "fumble", type: "specific", attackType: "melee", title: "Material Stress",
     effect: "Your weapon strikes a piece of armour or hardwood with a heavy thud. It takes 1d6 damage, ignoring the hardness." },
   { id: "hcdFumMelee00006", deck: "fumble", type: "specific", attackType: "melee", damageType: "slashing", title: "Like a Papercut",
-    effect: "Your weapon slips and causes you a minor injury. You take 1d4 persistent bleed damage." }
+    effect: "Your weapon slips and causes you a minor injury. You take 1d4 persistent bleed damage." },
   { id: "hcdFumMelee00007", deck: "fumble", type: "specific", attackType: "melee", title: "A jammed Parade",
     effect: "Your weapon gets caught on the surroundings. You must use 1 Interact action to free it before you can attack with it again." },
   { id: "hcdFumMelee00008", deck: "fumble", type: "specific", attackType: "melee", title: "Overswing",
