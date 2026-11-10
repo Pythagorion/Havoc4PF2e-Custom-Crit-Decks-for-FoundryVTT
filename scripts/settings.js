@@ -70,4 +70,12 @@ export function registerSettings() {
     config: false,
     type: Object,
     default: { hit: [], fumble: [] }
-  });}
+  });
+  // Last options picked in the manual draw dialog, per user
+  game.settings.register(MODULE_ID, "manualDrawOptions", {
+    scope: "user",
+    config: false,
+    type: Object,
+    default: {}
+  });
+}

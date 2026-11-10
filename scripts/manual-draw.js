@@ -1,6 +1,6 @@
 import { ATTACK_TYPES, DECKS, GENERAL_ONLY, TEMPLATES } from "./constants.js";
 import { getDamageTypeChoices } from "./deck.js";
-import { getSetting, localize } from "./utils.js";
+import { getSetting, localize, setSetting } from "./utils.js";
 import { beginDraw } from "./player-draw.js";
 
 /*
@@ -13,30 +13,41 @@ const GM_CHOOSER = "gm";
 
 /**
  * Ask the GM which deck to draw from (and for whom), then start the draw.
+ * The dialog starts with the options the GM picked last time; a selected token takes precedence for the actor.
  * @param {object} [defaults]  Preselected values: { deck, attackType, damageType, actorUuid, chooserId }
  */
 export async function openManualDraw(defaults = {}) {
   if (!game.user.isGM) return ui.notifications.warn(localize("HCD.Warn.GMOnly"));
 
+  const last = getSetting("manualDrawOptions") ?? {};
   const actors = getActorChoices();
   const selectedActor = canvas?.tokens?.controlled?.[0]?.actor ?? null;
-  const actorUuid = defaults.actorUuid ?? selectedActor?.uuid ?? "";
+  let actorUuid = defaults.actorUuid ?? selectedActor?.uuid ?? last.actorUuid ?? "";
+  if (!(actorUuid in actors)) actorUuid = "";
   const playerDraw = getSetting("playerDraw");
   const useDamageTypes = getSetting("useDamageTypes");
 
+  const deckChoices = Object.fromEntries(Object.entries(DECKS).map(([key, deck]) => [key, deck.label]));
+  const attackChoices = { "": "HCD.AttackType.any", [GENERAL_ONLY]: "HCD.AttackType.none", ...ATTACK_TYPES };
+  const damageChoices = { "": "HCD.DamageType.any", ...getDamageTypeChoices() };
+  const chooserChoices = getChooserChoices();
+  // The last chooser only fits if the actor is still the same one
+  const lastChooser = actorUuid === (last.actorUuid ?? "") ? last.chooserId : undefined;
+  const pick = (value, choices, fallback) => (value != null && value in choices ? value : fallback);
+
   const content = await foundry.applications.handlebars.renderTemplate(TEMPLATES.manualDraw, {
-    deckChoices: Object.fromEntries(Object.entries(DECKS).map(([key, deck]) => [key, deck.label])),
-    deck: defaults.deck in DECKS ? defaults.deck : "hit",
-    attackChoices: { "": "HCD.AttackType.any", [GENERAL_ONLY]: "HCD.AttackType.none", ...ATTACK_TYPES },
-    attackType: defaults.attackType ?? "",
+    deckChoices,
+    deck: pick(defaults.deck ?? last.deck, deckChoices, "hit"),
+    attackChoices,
+    attackType: pick(defaults.attackType ?? last.attackType, attackChoices, ""),
     useDamageTypes,
-    damageChoices: { "": "HCD.DamageType.any", ...getDamageTypeChoices() },
-    damageType: defaults.damageType ?? "",
+    damageChoices,
+    damageType: pick(defaults.damageType ?? last.damageType, damageChoices, ""),
     actorChoices: { "": localize("HCD.Manual.NoActor"), ...actors },
-    actorUuid: actorUuid in actors ? actorUuid : "",
+    actorUuid,
     playerDraw,
-    chooserChoices: getChooserChoices(),
-    chooserId: defaults.chooserId ?? defaultChooser(actorUuid)
+    chooserChoices,
+    chooserId: pick(defaults.chooserId ?? lastChooser, chooserChoices, defaultChooser(actorUuid))
   });
 
   const data = await foundry.applications.api.DialogV2.wait({
@@ -56,6 +67,8 @@ export async function openManualDraw(defaults = {}) {
     rejectClose: false
   });
   if (!data || typeof data !== "object") return;
+  // Fields hidden by the current settings keep their previously saved value
+  await setSetting("manualDrawOptions", { ...last, ...data });
 
   const actor = data.actorUuid ? fromUuidSync(data.actorUuid) : null;
   const chooserId = data.chooserId === GM_CHOOSER || !data.chooserId ? game.user.id : data.chooserId;

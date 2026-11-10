@@ -9,5 +9,8 @@
   },
   "devDependencies": {
     "@foundryvtt/foundryvtt-cli": "^1.0.4"
+  },
+  "dependencies": {
+    "node-gyp-build": "^4.8.4"
   }
 }
