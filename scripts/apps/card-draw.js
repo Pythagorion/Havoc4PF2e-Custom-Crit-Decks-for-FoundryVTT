@@ -168,7 +168,7 @@ export class CardDrawApp extends HandlebarsApplicationMixin(ApplicationV2) {
     if (!this.card || this.#busy) return;
     this.#busy = true;
     try {
-      await revealCard(this.card, this.info);
+      await revealCard(this.card, this.info, { damageTypes: this.damageTypes });
       await discardCard(this.deck, this.card.id);
       if (this.promptMessageId) await resolvePrompt(this.promptMessageId, "revealed", this.card.title);
       await this.close();

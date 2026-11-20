@@ -102,7 +102,7 @@ async function handleControl(session, action, userId) {
         session.phase = "done";
         broadcast(session);
         sessions.delete(session.id);
-        await revealCard(card, session.info, { popup: false });
+        await revealCard(card, session.info, { popup: false, damageTypes: session.damageTypes });
         await discardCard(session.deck, card.id);
         if (session.promptMessageId) await resolvePrompt(session.promptMessageId, "revealed", card.title);
         break;

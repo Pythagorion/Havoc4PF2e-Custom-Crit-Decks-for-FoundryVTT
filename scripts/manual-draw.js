@@ -71,6 +71,9 @@ export async function openManualDraw(defaults = {}) {
   await setSetting("manualDrawOptions", { ...last, ...data });
 
   const actor = data.actorUuid ? fromUuidSync(data.actorUuid) : null;
+  // Without a roll, the card automation uses the selected token and the GM's current target
+  const token = canvas?.tokens?.controlled?.find((t) => t.actor === actor)?.document ?? null;
+  const target = game.user.targets.first()?.document ?? null;
   const chooserId = data.chooserId === GM_CHOOSER || !data.chooserId ? game.user.id : data.chooserId;
   return beginDraw({
     deck: data.deck in DECKS ? data.deck : "hit",
@@ -84,7 +87,10 @@ export async function openManualDraw(defaults = {}) {
       natural: null,
       sourceMessageId: null,
       userId: chooserId,
-      actorUuid: actor?.uuid ?? null
+      actorUuid: actor?.uuid ?? null,
+      tokenUuid: token?.uuid ?? null,
+      targetActorUuid: target?.actor?.uuid ?? null,
+      targetTokenUuid: target?.uuid ?? null
     }
   });
 }

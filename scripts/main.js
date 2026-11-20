@@ -9,6 +9,7 @@ import { openDrawApp } from "./apps/card-draw.js";
 import { CardManager } from "./apps/card-manager.js";
 import { openManualDraw } from "./manual-draw.js";
 import { localize } from "./utils.js";
+import { bindResultListeners, getAutomation } from "./automation/index.js";
 
 Hooks.once("init", () => {
   registerSettings();
@@ -27,6 +28,8 @@ Hooks.once("init", () => {
     drawCard,
     revealCard,
     getCards,
+    /** The automation steps of a card (see scripts/automation/schema.js) */
+    getAutomation,
     reshuffle
   };
 });
@@ -41,3 +44,4 @@ Hooks.once("ready", () => {
 
 Hooks.on("createChatMessage", onCreateChatMessage);
 Hooks.on("renderChatMessageHTML", bindPromptListeners);
+Hooks.on("renderChatMessageHTML", bindResultListeners);

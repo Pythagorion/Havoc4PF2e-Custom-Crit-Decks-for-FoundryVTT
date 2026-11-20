@@ -8,7 +8,8 @@ export const TEMPLATES = {
   manager: `${TEMPLATE_PATH}/card-manager.hbs`,
   prompt: `${TEMPLATE_PATH}/gm-prompt.hbs`,
   playerDraw: `${TEMPLATE_PATH}/player-draw.hbs`,
-  manualDraw: `${TEMPLATE_PATH}/manual-draw.hbs`
+  manualDraw: `${TEMPLATE_PATH}/manual-draw.hbs`,
+  review: `${TEMPLATE_PATH}/automation-review.hbs`
 };
 
 /** Number of face-down cards dealt when players draw themselves. */

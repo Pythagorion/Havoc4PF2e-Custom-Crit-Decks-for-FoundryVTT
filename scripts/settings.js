@@ -56,6 +56,7 @@ export function registerSettings() {
     choices: choices("deckBehavior", ["replace", "discard"])
   });
   register("revealPopup", { type: Boolean, default: true });
+  register("automation", { type: Boolean, default: false });
   register("animations", { type: Boolean, default: true, scope: "client", restricted: false });
 
   // Hidden data storage

@@ -1,6 +1,7 @@
 import { DECKS, MODULE_ID, SOCKET } from "./constants.js";
 import { renderCardHTML } from "./deck.js";
 import { animationsEnabled, escapeHTML, format, getSetting, localize, wait } from "./utils.js";
+import { offerAutomation } from "./automation/index.js";
 
 function caption(info = {}) {
   if (!info.actorName) return "";
@@ -12,8 +13,9 @@ function caption(info = {}) {
  * Show a card to everyone: chat message for the record, popup for the drama.
  * @param {object} [options]
  * @param {boolean} [options.popup]  Send the reveal popup (skipped when players already saw the card).
+ * @param {string[]} [options.damageTypes]  Damage types of the triggering attack, used by the card automation.
  */
-export async function revealCard(card, info = {}, { popup = true } = {}) {
+export async function revealCard(card, info = {}, { popup = true, damageTypes = [] } = {}) {
   // Chat content is enriched by Foundry when the message renders, so pass the raw text.
   const cardHTML = await renderCardHTML(card, { flat: true, enrich: false });
   const text = caption(info);
@@ -24,6 +26,8 @@ export async function revealCard(card, info = {}, { popup = true } = {}) {
   });
 
   if (popup && getSetting("revealPopup")) game.socket.emit(SOCKET, { action: "reveal", card, info });
+  // Not awaited: the draw window closes while the GM reviews the automation
+  offerAutomation(card, { info, damageTypes });
 }
 
 /** Full-screen animated popup with the revealed card. */

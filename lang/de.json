@@ -93,6 +93,10 @@
         "Name": "Aufdeck-Popup",
         "Hint": "Aufgedeckte Karten allen Spielern als animiertes Popup zeigen (zusätzlich zur Chatnachricht)."
       },
+      "automation": {
+        "Name": "Karteneffekte anwenden",
+        "Hint": "Nach dem Aufdecken einer Karte erhält der SL eine Zusammenfassung, was die Karte bewirkt (Zustände, Effekte, Schaden), und kann sie auf die Kreaturen anwenden, vorher bearbeiten oder überspringen. Ist die Option deaktiviert, sind Karten reiner Text."
+      },
       "animations": {
         "Name": "Kartenanimationen",
         "Hint": "Zieh- und Umdreh-Animationen auf diesem Client abspielen."
@@ -205,6 +209,78 @@
       "Redeal": "Drei neue Karten",
       "Cancel": "Abbrechen",
       "Hide": "Ausblenden"
+    },
+    "Auto": {
+      "NoRecipient": "keine Kreatur",
+      "ApplyFailed": "Konnte nicht angewendet werden: {step}. Details in der Konsole (F12).",
+      "Recipient": {
+        "self": "Ziehende Kreatur",
+        "target": "Ziel"
+      },
+      "Field": {
+        "recipient": "Betrifft",
+        "condition": "Zustand",
+        "value": "Wert",
+        "duration": "Dauer",
+        "selector": "Verändert",
+        "modifierType": "Bonusart",
+        "name": "Name",
+        "formula": "Schaden",
+        "damageType": "Schadensart",
+        "text": "Hinweis"
+      },
+      "Duration": {
+        "unlimited": "bis zur Entfernung",
+        "selfTurnEnd": "bis zum Ende des Zuges der ziehenden Kreatur",
+        "selfNextStart": "bis zum Beginn des nächsten Zuges der ziehenden Kreatur",
+        "selfNextEnd": "bis zum Ende des nächsten Zuges der ziehenden Kreatur",
+        "targetNextStart": "bis zum Beginn des nächsten Zuges des Ziels",
+        "targetNextEnd": "bis zum Ende des nächsten Zuges des Ziels",
+        "minute": "für 1 Minute",
+        "encounter": "bis zum Ende der Begegnung"
+      },
+      "Selector": {
+        "ac": "RK",
+        "attack-roll": "Angriffswürfe",
+        "damage": "Schadenswürfe",
+        "perception": "Wahrnehmung",
+        "saving-throw": "Rettungswürfe",
+        "fortitude": "Zähigkeitswürfe",
+        "reflex": "Reflexwürfe",
+        "will": "Willenswürfe",
+        "skill-check": "Fertigkeitswürfe",
+        "all-speeds": "Bewegungsrate"
+      },
+      "ModifierType": {
+        "circumstance": "Situation",
+        "status": "Zustand",
+        "untyped": "untypisiert"
+      },
+      "Describe": {
+        "modifier": "{value} auf {selector} ({type})",
+        "damage": "{formula} Schaden ({type})",
+        "persistent": "{formula} anhaltender Schaden ({type})"
+      },
+      "Effects": {
+        "noReactions": "Kann keine Reaktionen nutzen"
+      },
+      "Notes": {
+        "nextStrikeOnly": "Der Bonus gilt nur für den nächsten Schlag gegen das Ziel – entferne den Effekt danach."
+      },
+      "Review": {
+        "Title": "Karteneffekte anwenden",
+        "Hint": "Diese Karte wendet Folgendes an:",
+        "EditHint": "Ändere, was angewendet wird. Nicht angehakte Schritte werden übersprungen.",
+        "Enabled": "Diesen Schritt anwenden",
+        "Apply": "Anwenden",
+        "Edit": "Bearbeiten",
+        "Skip": "Nicht anwenden"
+      },
+      "Result": {
+        "Title": "Angewendet: {title}",
+        "Undo": "Rückgängig",
+        "Undone": "Rückgängig gemacht"
+      }
     }
   }
 }

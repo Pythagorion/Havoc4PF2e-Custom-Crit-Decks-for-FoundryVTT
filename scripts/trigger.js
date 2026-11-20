@@ -42,6 +42,7 @@ export function evaluateMessage(message) {
   if (!deck) return null;
 
   const item = rollKind === "attack" ? getItem(message) : null;
+  const target = getTarget(message);
   return {
     deck,
     rollKind,
@@ -53,9 +54,21 @@ export function evaluateMessage(message) {
       natural,
       sourceMessageId: message.id,
       userId: message.author?.id ?? null,
-      actorUuid: actor?.uuid ?? null
+      actorUuid: actor?.uuid ?? null,
+      tokenUuid: message.token?.uuid ?? null,
+      targetActorUuid: target?.actor?.uuid ?? null,
+      targetTokenUuid: target?.token?.uuid ?? null
     }
   };
+}
+
+/** The roll's target as stored by PF2e ({ actor, token }), if any. */
+function getTarget(message) {
+  try {
+    return message.target ?? null;
+  } catch {
+    return null;
+  }
 }
 
 function getRollKind(context) {

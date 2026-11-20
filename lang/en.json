@@ -93,6 +93,10 @@
         "Name": "Reveal Popup",
         "Hint": "Show revealed cards as an animated popup to all players (in addition to the chat message)."
       },
+      "automation": {
+        "Name": "Apply Card Effects",
+        "Hint": "After a card is revealed, the GM gets a summary of what the card does (conditions, effects, damage) and can apply it to the creatures, edit it first or skip it. If disabled, cards are plain text."
+      },
       "animations": {
         "Name": "Card Animations",
         "Hint": "Play the draw and flip animations on this client."
@@ -205,6 +209,78 @@
       "Redeal": "Deal Three New Cards",
       "Cancel": "Cancel",
       "Hide": "Hide"
+    },
+    "Auto": {
+      "NoRecipient": "no creature",
+      "ApplyFailed": "Could not apply: {step}. See the console (F12) for details.",
+      "Recipient": {
+        "self": "Drawing creature",
+        "target": "Target"
+      },
+      "Field": {
+        "recipient": "Applies To",
+        "condition": "Condition",
+        "value": "Value",
+        "duration": "Duration",
+        "selector": "Modifies",
+        "modifierType": "Bonus Type",
+        "name": "Name",
+        "formula": "Damage",
+        "damageType": "Damage Type",
+        "text": "Note"
+      },
+      "Duration": {
+        "unlimited": "until removed",
+        "selfTurnEnd": "until the end of the drawing creature's turn",
+        "selfNextStart": "until the start of the drawing creature's next turn",
+        "selfNextEnd": "until the end of the drawing creature's next turn",
+        "targetNextStart": "until the start of the target's next turn",
+        "targetNextEnd": "until the end of the target's next turn",
+        "minute": "for 1 minute",
+        "encounter": "until the end of the encounter"
+      },
+      "Selector": {
+        "ac": "AC",
+        "attack-roll": "attack rolls",
+        "damage": "damage rolls",
+        "perception": "Perception",
+        "saving-throw": "saving throws",
+        "fortitude": "Fortitude saves",
+        "reflex": "Reflex saves",
+        "will": "Will saves",
+        "skill-check": "skill checks",
+        "all-speeds": "Speed"
+      },
+      "ModifierType": {
+        "circumstance": "circumstance",
+        "status": "status",
+        "untyped": "untyped"
+      },
+      "Describe": {
+        "modifier": "{value} {type} to {selector}",
+        "damage": "{formula} {type} damage",
+        "persistent": "{formula} persistent {type} damage"
+      },
+      "Effects": {
+        "noReactions": "Can't use reactions"
+      },
+      "Notes": {
+        "nextStrikeOnly": "The bonus only applies to the next Strike against the target – remove the effect after it."
+      },
+      "Review": {
+        "Title": "Apply Card Effects",
+        "Hint": "This card will apply the following:",
+        "EditHint": "Change what is applied. Unchecked steps are skipped.",
+        "Enabled": "Apply this step",
+        "Apply": "Apply",
+        "Edit": "Edit",
+        "Skip": "Don't Apply"
+      },
+      "Result": {
+        "Title": "Applied: {title}",
+        "Undo": "Undo",
+        "Undone": "Undone"
+      }
     }
   }
 }

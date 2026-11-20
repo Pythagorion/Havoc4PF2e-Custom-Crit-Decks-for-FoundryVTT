@@ -2,6 +2,8 @@ import {
   ATTACK_TYPES, CARD_TYPES, DECKS, FALLBACK_DAMAGE_TYPES, GENERAL_ONLY, ROLL_KIND_LABELS, TEMPLATES
 } from "./constants.js";
 import { format, getSetting, localize, setSetting, textToHTML } from "./utils.js";
+import { linkCompendiumEntries } from "./compendium-links.js";
+import { normalizeSteps } from "./automation/schema.js";
 
 /**
  * @typedef {object} CritCard
@@ -13,6 +15,7 @@ import { format, getSetting, localize, setSetting, textToHTML } from "./utils.js
  * @property {string} title
  * @property {string} effect     Plain text, may contain Foundry enrichers like [[/r 1d6]].
  * @property {boolean} enabled
+ * @property {object[]} [automation]  Automation steps (see automation/schema.js); default cards use DEFAULT_AUTOMATION.
  */
 
 /**
@@ -32,7 +35,9 @@ export function normalizeCard(data = {}) {
     damageType: specific && data.damageType ? String(data.damageType) : null,
     title: String(data.title ?? "").trim(),
     effect: String(data.effect ?? "").trim(),
-    enabled: data.enabled !== false
+    enabled: data.enabled !== false,
+    // Optional automation steps of custom cards; default cards get theirs by id
+    ...(Array.isArray(data.automation) ? { automation: normalizeSteps(data.automation) } : {})
   };
 }
 
@@ -193,7 +198,7 @@ export function cardTypeLabel(card) {
  */
 export async function renderCardHTML(card, { animate = false, flat = false, enrich = true, extraClasses = "" } = {}) {
   const deck = DECKS[card.deck] ?? DECKS.hit;
-  const text = textToHTML(card.effect);
+  const text = textToHTML(await linkCompendiumEntries(card.effect));
   const effectHTML = enrich
     ? await foundry.applications.ux.TextEditor.implementation.enrichHTML(text)
     : text;

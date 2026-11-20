@@ -561,3 +561,77 @@
     animation: none;
   }
 }
+
+/* ---------- Automation review (GM window) ---------- */
+.hcd-review .window-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hcd-review-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.hcd-review-title {
+  margin: 0 0 4px;
+  border: none;
+}
+
+.hcd-review-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hcd-review-list li {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  padding: 4px 0;
+}
+
+.hcd-review-list i,
+.hcd-review-step legend i {
+  width: 1.2em;
+  text-align: center;
+  opacity: 0.75;
+}
+
+.hcd-review-list .hcd-note { font-style: italic; }
+
+.hcd-review .hcd-disabled {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.hcd-review-step { margin: 0 0 8px; }
+.hcd-review-step.hcd-disabled { text-decoration: none; }
+
+.hcd-review-step legend {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.hcd-review-footer {
+  display: flex;
+  gap: 6px;
+}
+
+/* ---------- Automation result (chat) ---------- */
+.hcd-result {
+  --hcd-accent: #8b1a1a;
+  padding-left: 8px;
+  border-left: 4px solid var(--hcd-accent);
+}
+
+.hcd-result-header {
+  margin: 0;
+  color: var(--hcd-accent);
+  font-weight: bold;
+}
+
+.hcd-result-list { margin: 4px 0; }
+.hcd-result-notes { font-style: italic; }

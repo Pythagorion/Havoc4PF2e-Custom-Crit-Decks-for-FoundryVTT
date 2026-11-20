@@ -78,9 +78,11 @@ export class CardManager extends HandlebarsApplicationMixin(ApplicationV2) {
   #syncFromForm() {
     if (!this.element) return;
     const data = foundry.utils.expandObject(new foundry.applications.ux.FormDataExtended(this.element).object);
+    // Fields without form inputs (automation) are taken over from the working copy
+    const previous = new Map((this.cards ?? []).map((card) => [card.id, card]));
     this.cards = Object.entries(data.cards ?? {})
       .sort(([a], [b]) => Number(a) - Number(b))
-      .map(([, card]) => normalizeCard(card));
+      .map(([, card]) => normalizeCard({ ...previous.get(card.id), ...card }));
   }
 
   static async #onSubmit() {
