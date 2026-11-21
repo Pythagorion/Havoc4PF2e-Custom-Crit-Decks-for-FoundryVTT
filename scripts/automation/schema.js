@@ -52,6 +52,28 @@ export const MODIFIER_TYPES = {
 /** Damage type placeholder: the damage type of the triggering attack. */
 export const WEAPON_DAMAGE = "weapon";
 
+/** Checks a save step can ask for; "flat" is a flat check (success or failure only). */
+export const SAVES = {
+  fortitude: "HCD.Auto.Save.fortitude",
+  reflex: "HCD.Auto.Save.reflex",
+  will: "HCD.Auto.Save.will",
+  flat: "HCD.Auto.Save.flat"
+};
+
+/**
+ * Where a save's DC comes from. A step's `dc` is one of these keys or a fixed number;
+ * the review dialog always shows the resolved number.
+ */
+export const DC_SOURCES = {
+  classDC: "HCD.Auto.DC.classDC",       // class DC of the drawing creature
+  spellDC: "HCD.Auto.DC.spellDC",       // spell DC of the drawing creature
+  targetHard: "HCD.Auto.DC.targetHard"  // hard level-based DC for the target's level
+};
+
+/** Degrees of success, best first. Missing critical outcomes fall back to the plain ones. */
+export const OUTCOMES = ["criticalSuccess", "success", "failure", "criticalFailure"];
+export const OUTCOME_FALLBACK = { criticalSuccess: "success", criticalFailure: "failure" };
+
 /**
  * Field kinds: recipient, condition, duration, selector, modifierType, damageType (select fields),
  * number, text, formula (input fields).
@@ -88,6 +110,13 @@ export const STEP_TYPES = {
     icon: "fa-solid fa-note-sticky",
     fields: { text: "text" },
     defaults: { text: "" }
+  },
+  save: {
+    // The recipient rolls; the steps of the rolled degree of success are applied afterwards.
+    // `outcomes` maps OUTCOMES keys to step lists, e.g. { failure: [{ type: "condition", … }] }.
+    icon: "fa-solid fa-dice-d20",
+    fields: { recipient: "recipient", save: "save", dc: "dc" },
+    defaults: { recipient: "target", save: "fortitude", dc: "classDC", outcomes: {} }
   }
 };
 
@@ -96,5 +125,13 @@ export function normalizeSteps(steps) {
   if (!Array.isArray(steps)) return [];
   return steps
     .filter((step) => step?.type in STEP_TYPES)
-    .map((step) => ({ ...foundry.utils.deepClone(STEP_TYPES[step.type].defaults), ...foundry.utils.deepClone(step) }));
+    .map((step) => {
+      const normalized = { ...foundry.utils.deepClone(STEP_TYPES[step.type].defaults), ...foundry.utils.deepClone(step) };
+      if (step.type === "save") {
+        normalized.outcomes = Object.fromEntries(OUTCOMES
+          .filter((degree) => Array.isArray(normalized.outcomes?.[degree]))
+          .map((degree) => [degree, normalizeSteps(normalized.outcomes[degree])]));
+      }
+      return normalized;
+    });
 }

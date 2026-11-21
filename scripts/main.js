@@ -9,7 +9,7 @@ import { openDrawApp } from "./apps/card-draw.js";
 import { CardManager } from "./apps/card-manager.js";
 import { openManualDraw } from "./manual-draw.js";
 import { localize } from "./utils.js";
-import { bindResultListeners, getAutomation } from "./automation/index.js";
+import { bindResultListeners, bindSaveListeners, getAutomation, onAutomationSocket } from "./automation/index.js";
 
 Hooks.once("init", () => {
   registerSettings();
@@ -38,6 +38,7 @@ Hooks.once("ready", () => {
   if (game.system.id !== "pf2e" && game.user.isGM) ui.notifications.warn(localize("HCD.Warn.NotPF2e"));
   game.socket.on(SOCKET, (data) => {
     if (data?.action?.startsWith("pd-")) onPlayerDrawSocket(data);
+    else if (data?.action?.startsWith("auto-")) onAutomationSocket(data);
     else onSocketMessage(data);
   });
 });
@@ -45,3 +46,4 @@ Hooks.once("ready", () => {
 Hooks.on("createChatMessage", onCreateChatMessage);
 Hooks.on("renderChatMessageHTML", bindPromptListeners);
 Hooks.on("renderChatMessageHTML", bindResultListeners);
+Hooks.on("renderChatMessageHTML", bindSaveListeners);

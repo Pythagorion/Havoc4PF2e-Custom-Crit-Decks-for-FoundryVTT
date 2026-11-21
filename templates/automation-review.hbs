@@ -4,22 +4,23 @@
   {{#if editing}}
   <p class="hint">{{localize "HCD.Auto.Review.EditHint"}}</p>
   {{#each steps}}
-  <fieldset class="hcd-review-step{{#unless enabled}} hcd-disabled{{/unless}}">
+  {{#if heading}}<p class="hcd-review-heading hcd-depth-{{depth}}">{{heading}}</p>{{/if}}
+  <fieldset class="hcd-review-step hcd-depth-{{depth}}{{#unless enabled}} hcd-disabled{{/unless}}">
     <legend>
-      <input type="checkbox" name="steps.{{index}}.enabled" {{checked enabled}} data-tooltip="HCD.Auto.Review.Enabled">
+      <input type="checkbox" name="{{path}}.enabled" {{checked enabled}} data-tooltip="HCD.Auto.Review.Enabled">
       <i class="{{icon}}"></i> {{description}}
     </legend>
     {{#each fields}}
     <div class="form-group">
       <label>{{localize label}}</label>
       {{#if choices}}
-      <select name="steps.{{../index}}.{{key}}">
+      <select name="{{../path}}.{{key}}">
         {{selectOptions choices selected=value localize=true}}
       </select>
       {{else if isNumber}}
-      <input type="number" name="steps.{{../index}}.{{key}}" value="{{value}}" step="1">
+      <input type="number" name="{{../path}}.{{key}}" value="{{value}}" step="1">
       {{else}}
-      <input type="text" name="steps.{{../index}}.{{key}}" value="{{value}}">
+      <input type="text" name="{{../path}}.{{key}}" value="{{value}}">
       {{/if}}
     </div>
     {{/each}}
@@ -30,7 +31,8 @@
   <p class="hint">{{localize "HCD.Auto.Review.Hint"}}</p>
   <ul class="hcd-review-list">
     {{#each steps}}
-    <li class="{{#unless enabled}}hcd-disabled{{/unless}}{{#if isNote}} hcd-note{{/if}}">
+    {{#if heading}}<li class="hcd-review-heading hcd-depth-{{depth}}">{{heading}}</li>{{/if}}
+    <li class="hcd-depth-{{depth}}{{#unless enabled}} hcd-disabled{{/unless}}{{#if isNote}} hcd-note{{/if}}">
       <i class="{{icon}}"></i> <span>{{description}}</span>
     </li>
     {{/each}}

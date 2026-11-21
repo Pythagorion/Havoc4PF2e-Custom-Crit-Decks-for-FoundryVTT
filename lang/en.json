@@ -227,8 +227,30 @@
         "name": "Name",
         "formula": "Damage",
         "damageType": "Damage Type",
-        "text": "Note"
+        "text": "Note",
+        "save": "Save",
+        "dc": "DC"
       },
+      "Save": {
+        "fortitude": "Fortitude save",
+        "reflex": "Reflex save",
+        "will": "Will save",
+        "flat": "flat check",
+        "Roll": "Roll {save}",
+        "GMHint": "GM: roll for them with the button above, or set the result:"
+      },
+      "DC": {
+        "classDC": "class DC of the drawing creature",
+        "spellDC": "spell DC of the drawing creature",
+        "targetHard": "hard DC for the target's level"
+      },
+      "Degree": {
+        "criticalSuccess": "Critical success",
+        "success": "Success",
+        "failure": "Failure",
+        "criticalFailure": "Critical failure"
+      },
+      "FlatFlavor": "{title}: flat check DC {dc}",
       "Duration": {
         "unlimited": "until removed",
         "selfTurnEnd": "until the end of the drawing creature's turn",
@@ -259,13 +281,15 @@
       "Describe": {
         "modifier": "{value} {type} to {selector}",
         "damage": "{formula} {type} damage",
-        "persistent": "{formula} persistent {type} damage"
+        "persistent": "{formula} persistent {type} damage",
+        "save": "{save} DC {dc}"
       },
       "Effects": {
         "noReactions": "Can't use reactions"
       },
       "Notes": {
-        "nextStrikeOnly": "The bonus only applies to the next Strike against the target – remove the effect after it."
+        "nextStrikeOnly": "The bonus only applies to the next Strike against the target – remove the effect after it.",
+        "weaponBroken": "The weapon is broken and can't be repaired – mark it on the character sheet."
       },
       "Review": {
         "Title": "Apply Card Effects",
@@ -278,6 +302,9 @@
       },
       "Result": {
         "Title": "Applied: {title}",
+        "SaveTitle": "{title} – {actor}: {outcome}",
+        "SaveRequested": "{step} (rolled next)",
+        "Nothing": "No effect.",
         "Undo": "Undo",
         "Undone": "Undone"
       }

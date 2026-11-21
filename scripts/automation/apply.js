@@ -1,7 +1,7 @@
 import { MODULE_ID } from "../constants.js";
 import { damageTypeLabel } from "../deck.js";
 import { escapeHTML, format, localize, textToHTML } from "../utils.js";
-import { DURATIONS, MODIFIER_SELECTORS, MODIFIER_TYPES, STEP_TYPES, WEAPON_DAMAGE } from "./schema.js";
+import { DURATIONS, MODIFIER_SELECTORS, MODIFIER_TYPES, SAVES, STEP_TYPES, WEAPON_DAMAGE } from "./schema.js";
 
 const EFFECT_ICON = "systems/pf2e/icons/default-icons/effect.svg";
 
@@ -38,14 +38,51 @@ function resolveCreature(tokenUuid, actorUuid) {
  */
 export function buildPlan(steps, { info = {}, damageTypes = [] } = {}) {
   const creatures = resolveCreatures(info);
-  return steps.map((step) => {
+  const prepare = (step) => {
     const planned = { ...step, enabled: true };
     if (planned.name) planned.name = localize(planned.name);
     if (planned.text) planned.text = localize(planned.text);
     if (planned.damageType === WEAPON_DAMAGE) planned.damageType = damageTypes[0] ?? "bludgeoning";
     if ("recipient" in STEP_TYPES[step.type].fields && !creatures[planned.recipient]) planned.enabled = false;
+    if (step.type === "save") {
+      planned.dc = resolveDC(step.dc, creatures);
+      if (planned.dc === null) planned.enabled = false;
+      planned.outcomes = Object.fromEntries(Object.entries(step.outcomes ?? {}).map(([degree, list]) => [degree, list.map(prepare)]));
+    }
     return planned;
-  });
+  };
+  return steps.map(prepare);
+}
+
+/** DC of a save step: a fixed number or one of DC_SOURCES; null if it can't be determined. */
+export function resolveDC(dc, creatures) {
+  if (typeof dc === "number") return dc;
+  const self = creatures.self?.actor;
+  const target = creatures.target?.actor;
+  switch (dc) {
+    case "classDC": return self ? classDC(self) : null;
+    case "spellDC": return self ? spellDC(self) : null;
+    case "targetHard": return target ? levelDC(target.level) + 2 : null;
+  }
+  return Number(dc) || null;
+}
+
+function classDC(actor) {
+  return actor.classDC?.dc?.value ?? actor.system.attributes?.classDC?.value ?? levelDC(actor.level);
+}
+
+/** Best spell DC of the creature, its class DC if it can't cast spells. */
+function spellDC(actor) {
+  const dcs = (actor.spellcasting?.contents ?? []).map((entry) => entry.statistic?.dc?.value).filter(Number.isFinite);
+  return dcs.length ? Math.max(...dcs) : classDC(actor);
+}
+
+/** DCs by level (GM Core, "DCs by Level"). */
+const LEVEL_DCS = [14, 15, 16, 18, 19, 20, 22, 23, 24, 26, 27, 28, 30, 31, 32, 34, 35, 36, 38, 39, 40, 42, 44, 46, 48, 50];
+
+function levelDC(level = 0) {
+  if (level < 0) return 13;
+  return LEVEL_DCS[Math.min(level, LEVEL_DCS.length - 1)];
 }
 
 /** One line describing a step, e.g. "Goblin: Frightened 1 (until the end of its next turn)". */
@@ -74,6 +111,8 @@ export function describeStep(step, creatures) {
       return `${name}: ${format("HCD.Auto.Describe.persistent", { formula: step.formula, type: damageTypeLabel(step.damageType) })}`;
     case "note":
       return step.text;
+    case "save":
+      return `${name}: ${format("HCD.Auto.Describe.save", { save: localize(SAVES[step.save] ?? step.save), dc: step.dc ?? "?" })}`;
   }
   return "";
 }
@@ -88,17 +127,30 @@ function isValued(slug) {
 /* -------------------------------------------- */
 
 /**
- * Apply the enabled steps of a plan.
- * @returns {Promise<{lines: string[], records: object[]}>}  Descriptions of what was applied, undo records.
+ * Apply the enabled steps of a plan. Save steps are not rolled here but returned, so
+ * the caller can start them after announcing the result (see saves.js, runPlan).
+ * @returns {Promise<{lines: string[], notes: string[], records: object[], saves: object[]}>}
+ *   Descriptions of what was applied, reminders for the GM, undo records, save steps to roll.
  */
 export async function applyPlan(plan, { card, info = {} }) {
   const creatures = resolveCreatures(info);
   const records = [];
   const lines = [];
+  const notes = [];
+  const saves = [];
   for (const step of plan) {
-    if (!step.enabled || step.type === "note") continue;
+    if (!step.enabled) continue;
+    if (step.type === "note") {
+      notes.push(step.text);
+      continue;
+    }
     const creature = creatures[step.recipient];
     if (!creature) continue;
+    if (step.type === "save") {
+      saves.push(step);
+      lines.push(format("HCD.Auto.Result.SaveRequested", { step: describeStep(step, creatures) }));
+      continue;
+    }
     try {
       await APPLY[step.type](step, creature, { creatures, card, records });
       lines.push(describeStep(step, creatures));
@@ -107,7 +159,7 @@ export async function applyPlan(plan, { card, info = {} }) {
       ui.notifications.error(format("HCD.Auto.ApplyFailed", { step: describeStep(step, creatures) }));
     }
   }
-  return { lines, records };
+  return { lines, notes, records, saves };
 }
 
 const APPLY = {

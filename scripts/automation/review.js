@@ -1,7 +1,9 @@
 import { MODULE_ID, TEMPLATES } from "../constants.js";
 import { getDamageTypeChoices } from "../deck.js";
 import { localize } from "../utils.js";
-import { DURATIONS, MODIFIER_SELECTORS, MODIFIER_TYPES, RECIPIENTS, STEP_TYPES } from "./schema.js";
+import {
+  DURATIONS, MODIFIER_SELECTORS, MODIFIER_TYPES, OUTCOME_FALLBACK, OUTCOMES, RECIPIENTS, SAVES, STEP_TYPES
+} from "./schema.js";
 import { describeStep, resolveCreatures } from "./apply.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -52,8 +54,10 @@ export class AutomationReview extends HandlebarsApplicationMixin(ApplicationV2) 
     return Object.assign(context, {
       title: this.card.title,
       editing: this.#editing,
-      steps: this.plan.map((step, index) => ({
-        index,
+      steps: this.#flatten(this.plan, "steps", 0).map(({ step, path, depth, heading }) => ({
+        path,
+        depth,
+        heading,
         enabled: step.enabled,
         isNote: step.type === "note",
         icon: STEP_TYPES[step.type].icon,
@@ -64,10 +68,34 @@ export class AutomationReview extends HandlebarsApplicationMixin(ApplicationV2) 
           label: `HCD.Auto.Field.${key}`,
           value: step[key] ?? "",
           choices: choices[kind] ?? null,
-          isNumber: kind === "number"
+          isNumber: kind === "number" || kind === "dc"
         }))
       })),
       hasSteps: this.plan.some((s) => s.enabled && s.type !== "note")
+    });
+  }
+
+  /**
+   * The plan as a flat list: the outcome steps of a save follow it, one level deeper,
+   * with the degree of success as heading. `path` is the form name prefix of a step.
+   */
+  #flatten(steps, prefix, depth) {
+    return steps.flatMap((step, index) => {
+      const path = `${prefix}.${index}`;
+      const entries = [{ step, path, depth, heading: null }];
+      if (step.type !== "save") return entries;
+      for (const degree of OUTCOMES) {
+        const children = step.outcomes?.[degree];
+        if (!children?.length) continue;
+        // A missing critical outcome uses this one, so name both
+        const covers = Object.entries(OUTCOME_FALLBACK)
+          .filter(([critical, plain]) => plain === degree && !step.outcomes[critical]?.length)
+          .map(([critical]) => critical);
+        const heading = [degree, ...covers].map((d) => localize(`HCD.Auto.Degree.${d}`)).join(" / ");
+        this.#flatten(children, `${path}.outcomes.${degree}`, depth + 1)
+          .forEach((entry, i) => entries.push(i === 0 && entry.depth === depth + 1 ? { ...entry, heading } : entry));
+      }
+      return entries;
     });
   }
 
@@ -86,7 +114,8 @@ export class AutomationReview extends HandlebarsApplicationMixin(ApplicationV2) 
       duration: Object.fromEntries(Object.keys(DURATIONS).map((key) => [key, `HCD.Auto.Duration.${key}`])),
       selector: MODIFIER_SELECTORS,
       modifierType: MODIFIER_TYPES,
-      damageType: getDamageTypeChoices()
+      damageType: getDamageTypeChoices(),
+      save: SAVES
     };
   }
 
@@ -94,10 +123,16 @@ export class AutomationReview extends HandlebarsApplicationMixin(ApplicationV2) 
   #syncFromForm() {
     if (!this.#editing || !this.element) return;
     const data = foundry.utils.expandObject(new foundry.applications.ux.FormDataExtended(this.element).object);
-    for (const [index, values] of Object.entries(data.steps ?? {})) {
-      const step = this.plan[Number(index)];
-      if (step) Object.assign(step, values, { enabled: !!values.enabled });
-    }
+    const merge = (steps, values = {}) => {
+      for (const [index, stepValues] of Object.entries(values)) {
+        const step = steps[Number(index)];
+        if (!step) continue;
+        const { outcomes, ...fields } = stepValues;
+        Object.assign(step, fields, { enabled: !!fields.enabled });
+        for (const [degree, children] of Object.entries(outcomes ?? {})) merge(step.outcomes?.[degree] ?? [], children);
+      }
+    };
+    merge(this.plan, data.steps);
   }
 
   static #onApply() {

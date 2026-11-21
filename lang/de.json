@@ -227,8 +227,30 @@
         "name": "Name",
         "formula": "Schaden",
         "damageType": "Schadensart",
-        "text": "Hinweis"
+        "text": "Hinweis",
+        "save": "Wurf",
+        "dc": "SG"
       },
+      "Save": {
+        "fortitude": "Zähigkeitswurf",
+        "reflex": "Reflexwurf",
+        "will": "Willenswurf",
+        "flat": "Pauschaler Wurf",
+        "Roll": "{save} würfeln",
+        "GMHint": "SL: Mit dem Knopf oben für den Spieler würfeln oder das Ergebnis setzen:"
+      },
+      "DC": {
+        "classDC": "Klassen-SG der ziehenden Kreatur",
+        "spellDC": "Zauber-SG der ziehenden Kreatur",
+        "targetHard": "schwerer SG für die Stufe des Ziels"
+      },
+      "Degree": {
+        "criticalSuccess": "Kritischer Erfolg",
+        "success": "Erfolg",
+        "failure": "Fehlschlag",
+        "criticalFailure": "Kritischer Fehlschlag"
+      },
+      "FlatFlavor": "{title}: Pauschaler Wurf SG {dc}",
       "Duration": {
         "unlimited": "bis zur Entfernung",
         "selfTurnEnd": "bis zum Ende des Zuges der ziehenden Kreatur",
@@ -259,13 +281,15 @@
       "Describe": {
         "modifier": "{value} auf {selector} ({type})",
         "damage": "{formula} Schaden ({type})",
-        "persistent": "{formula} anhaltender Schaden ({type})"
+        "persistent": "{formula} anhaltender Schaden ({type})",
+        "save": "{save} SG {dc}"
       },
       "Effects": {
         "noReactions": "Kann keine Reaktionen nutzen"
       },
       "Notes": {
-        "nextStrikeOnly": "Der Bonus gilt nur für den nächsten Schlag gegen das Ziel – entferne den Effekt danach."
+        "nextStrikeOnly": "Der Bonus gilt nur für den nächsten Schlag gegen das Ziel – entferne den Effekt danach.",
+        "weaponBroken": "Die Waffe ist zerbrochen und kann nicht repariert werden – auf dem Charakterbogen vermerken."
       },
       "Review": {
         "Title": "Karteneffekte anwenden",
@@ -278,6 +302,9 @@
       },
       "Result": {
         "Title": "Angewendet: {title}",
+        "SaveTitle": "{title} – {actor}: {outcome}",
+        "SaveRequested": "{step} (wird als Nächstes gewürfelt)",
+        "Nothing": "Keine Wirkung.",
         "Undo": "Rückgängig",
         "Undone": "Rückgängig gemacht"
       }
