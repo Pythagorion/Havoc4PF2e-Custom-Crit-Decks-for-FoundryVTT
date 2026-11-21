@@ -1,23 +1,29 @@
 import { MODULE_ID } from "../constants.js";
 import { damageTypeLabel } from "../deck.js";
 import { escapeHTML, format, localize, textToHTML } from "../utils.js";
-import { DURATIONS, MODIFIER_SELECTORS, MODIFIER_TYPES, SAVES, STEP_TYPES, WEAPON_DAMAGE } from "./schema.js";
+import {
+  AFFECTS, DURATIONS, MODIFIER_SELECTORS, MODIFIER_TYPES, SAVES, SPEED_DISTANCES, STEP_TYPES, WEAPON_DAMAGE
+} from "./schema.js";
+import { askDamage, askForRolls } from "./table-rolls.js";
+import { findDestinations, gridlessMessage, moveLabel, noDestinationsMessage, pickDestination } from "./placement.js";
 
 const EFFECT_ICON = "systems/pf2e/icons/default-icons/effect.svg";
 
 /* -------------------------------------------- */
-/*  Context                                     */
+/*  Creatures                                   */
 /* -------------------------------------------- */
 
 /**
- * The creatures a card can affect, from the draw info.
- * @returns {{self: Creature|null, target: Creature|null}}
+ * The creatures a card can affect, from the draw info. `saver` is only set while the
+ * outcome of a save is applied.
+ * @returns {{self: Creature|null, target: Creature|null, saver: Creature|null}}
  * @typedef {{actor: Actor, token: TokenDocument|null}} Creature
  */
 export function resolveCreatures(info = {}) {
   return {
     self: resolveCreature(info.tokenUuid, info.actorUuid),
-    target: resolveCreature(info.targetTokenUuid, info.targetActorUuid)
+    target: resolveCreature(info.targetTokenUuid, info.targetActorUuid),
+    saver: resolveCreature(info.saverTokenUuid, info.saverActorUuid)
   };
 }
 
@@ -28,30 +34,88 @@ function resolveCreature(tokenUuid, actorUuid) {
   return { actor, token: token ?? actor.getActiveTokens(false, true)[0] ?? null };
 }
 
+const creatureName = (creature) => creature.token?.name ?? creature.actor.name;
+
+/**
+ * The creatures a step applies to. Area steps use the creatures the GM chose in the
+ * review; area steps that weren't reviewed (save outcomes) take all matches, or the closest.
+ */
+export function resolveRecipients(step, creatures) {
+  if (step.recipient !== "area") {
+    const creature = creatures[step.recipient];
+    return creature ? [creature] : [];
+  }
+  if (Array.isArray(step.chosen)) return step.chosen.map((uuid) => resolveCreature(uuid, null)).filter(Boolean);
+  const found = findAreaCreatures(step, creatures);
+  return step.pick === "one" ? found.slice(0, 1) : found;
+}
+
+/** Creatures on the canvas matching an area step, closest first. */
+export function findAreaCreatures(step, creatures) {
+  const center = creatures[step.center]?.token?.object;
+  if (!canvas.ready || !center || center.scene !== canvas.scene) return [];
+  const self = creatures.self?.actor ?? null;
+  const target = creatures.target?.token ?? null;
+  const found = [];
+  for (const token of canvas.tokens.placeables) {
+    const actor = token.actor;
+    if (!actor?.isOfType("creature") || isDefeated(token)) continue;
+    if (token === center) {
+      if (step.includeCenter) found.push({ token, distance: 0 });
+      continue;
+    }
+    if (step.excludeTarget && token.document === target) continue;
+    if (step.affects === "enemies" && !(self && actor.isEnemyOf(self))) continue;
+    if (step.affects === "allies" && !(self && actor.isAllyOf(self))) continue;
+    const distance = center.distanceTo(token);
+    if (distance <= step.radius) found.push({ token, distance });
+  }
+  return found.sort((a, b) => a.distance - b.distance).map(({ token }) => ({ actor: token.actor, token: token.document }));
+}
+
+function isDefeated(token) {
+  return !!token.combatant?.isDefeated || (token.actor.hitPoints?.value ?? 1) <= 0;
+}
+
+/**
+ * Find the creatures of an area step for the review: `candidates` are all matches,
+ * `chosen` the token UUIDs that will be affected (all, or the closest one).
+ */
+export function planArea(step, creatures) {
+  const found = findAreaCreatures(step, creatures);
+  step.candidates = found.map((c) => ({ uuid: c.token.uuid, name: creatureName(c) }));
+  step.chosen = (step.pick === "one" ? found.slice(0, 1) : found).map((c) => c.token.uuid);
+}
+
 /* -------------------------------------------- */
 /*  Plan                                        */
 /* -------------------------------------------- */
 
 /**
- * Turn card steps into the plan shown to the GM: texts localized, the weapon's damage
- * type filled in, steps without a recipient switched off.
+ * Turn card steps into the plan shown to the GM: texts localized, the weapon's damage type,
+ * DCs and area creatures filled in, steps without a recipient switched off.
+ * Outcome steps of saves are only resolved once the save was rolled.
  */
 export function buildPlan(steps, { info = {}, damageTypes = [] } = {}) {
   const creatures = resolveCreatures(info);
-  const prepare = (step) => {
+  const prepare = (step, nested) => {
     const planned = { ...step, enabled: true };
     if (planned.name) planned.name = localize(planned.name);
     if (planned.text) planned.text = localize(planned.text);
     if (planned.damageType === WEAPON_DAMAGE) planned.damageType = damageTypes[0] ?? "bludgeoning";
-    if ("recipient" in STEP_TYPES[step.type].fields && !creatures[planned.recipient]) planned.enabled = false;
+    if (!nested && "recipient" in STEP_TYPES[step.type].fields) {
+      if (step.recipient === "area") planArea(planned, creatures);
+      if (!resolveRecipients(planned, creatures).length) planned.enabled = false;
+    }
     if (step.type === "save") {
       planned.dc = resolveDC(step.dc, creatures);
       if (planned.dc === null) planned.enabled = false;
-      planned.outcomes = Object.fromEntries(Object.entries(step.outcomes ?? {}).map(([degree, list]) => [degree, list.map(prepare)]));
+      planned.outcomes = Object.fromEntries(Object.entries(step.outcomes ?? {})
+        .map(([degree, list]) => [degree, list.map((child) => prepare(child, true))]));
     }
     return planned;
   };
-  return steps.map(prepare);
+  return steps.map((step) => prepare(step, false));
 }
 
 /** DC of a save step: a fixed number or one of DC_SOURCES; null if it can't be determined. */
@@ -85,9 +149,39 @@ function levelDC(level = 0) {
   return LEVEL_DCS[Math.min(level, LEVEL_DCS.length - 1)];
 }
 
-/** One line describing a step, e.g. "Goblin: Frightened 1 (until the end of its next turn)". */
-export function describeStep(step, creatures) {
-  const name = creatures[step.recipient]?.actor.name ?? localize("HCD.Auto.NoRecipient");
+/** Movement distance in feet: a number, or a share of the creature's land Speed (rounded down to 5 ft). */
+export function resolveDistance(distance, actor) {
+  if (distance in SPEED_DISTANCES) {
+    const speed = Number(actor?.system?.movement?.speeds?.land?.value) || 25;
+    return Math.max(5, Math.floor((speed * SPEED_DISTANCES[distance]) / 5) * 5);
+  }
+  return Math.max(0, Number(distance) || 0);
+}
+
+/** Who a step affects, e.g. "Goblin", "Goblin, Orc" or "enemies within 30 ft of Valeros". */
+function recipientLabel(step, creatures) {
+  if (step.recipient === "area") {
+    if (Array.isArray(step.chosen)) {
+      const names = step.chosen.map((uuid) => step.candidates?.find((c) => c.uuid === uuid)?.name).filter(Boolean);
+      return names.length ? names.join(", ") : localize("HCD.Auto.NoRecipient");
+    }
+    const center = creatures[step.center];
+    return format("HCD.Auto.Describe.area", {
+      affects: localize(AFFECTS[step.affects] ?? step.affects),
+      radius: step.radius,
+      center: center ? creatureName(center) : localize(`HCD.Auto.Recipient.${step.center}`)
+    });
+  }
+  const creature = creatures[step.recipient];
+  if (creature) return creatureName(creature);
+  return step.recipient === "saver" ? localize("HCD.Auto.Recipient.saver") : localize("HCD.Auto.NoRecipient");
+}
+
+/**
+ * One line describing a step, e.g. "Goblin: Frightened 1 (until the end of its next turn)".
+ * @param {string} [name]  Recipient name to use instead of the step's recipient(s).
+ */
+export function describeStep(step, creatures, name = recipientLabel(step, creatures)) {
   const duration = step.duration && step.duration !== "unlimited" ? ` (${localize(`HCD.Auto.Duration.${step.duration}`)})` : "";
   switch (step.type) {
     case "condition": {
@@ -113,6 +207,13 @@ export function describeStep(step, creatures) {
       return step.text;
     case "save":
       return `${name}: ${format("HCD.Auto.Describe.save", { save: localize(SAVES[step.save] ?? step.save), dc: step.dc ?? "?" })}`;
+    case "move": {
+      const from = creatures[step.from];
+      const distance = step.distance in SPEED_DISTANCES
+        ? localize(`HCD.Auto.Distance.${step.distance}`)
+        : `${step.distance} ${canvas.scene?.grid.units || "ft"}`;
+      return moveLabel(name, step.mode, distance, from ? creatureName(from) : localize(`HCD.Auto.Recipient.${step.from}`));
+    }
   }
   return "";
 }
@@ -127,10 +228,10 @@ function isValued(slug) {
 /* -------------------------------------------- */
 
 /**
- * Apply the enabled steps of a plan. Save steps are not rolled here but returned, so
- * the caller can start them after announcing the result (see saves.js, runPlan).
- * @returns {Promise<{lines: string[], notes: string[], records: object[], saves: object[]}>}
- *   Descriptions of what was applied, reminders for the GM, undo records, save steps to roll.
+ * Apply the enabled steps of a plan to each of their recipients. Save steps are not rolled
+ * here but returned, so the caller can start them after announcing the result (see saves.js, runPlan).
+ * @returns {Promise<{lines: string[], notes: string[], records: object[], saves: {step: object, creature: Creature}[]}>}
+ *   Descriptions of what was applied, reminders for the GM, undo records, saves to roll.
  */
 export async function applyPlan(plan, { card, info = {} }) {
   const creatures = resolveCreatures(info);
@@ -144,36 +245,38 @@ export async function applyPlan(plan, { card, info = {} }) {
       notes.push(step.text);
       continue;
     }
-    const creature = creatures[step.recipient];
-    if (!creature) continue;
-    if (step.type === "save") {
-      saves.push(step);
-      lines.push(format("HCD.Auto.Result.SaveRequested", { step: describeStep(step, creatures) }));
-      continue;
-    }
-    try {
-      await APPLY[step.type](step, creature, { creatures, card, records });
-      lines.push(describeStep(step, creatures));
-    } catch (err) {
-      console.error(`${MODULE_ID} | Failed to apply`, step, err);
-      ui.notifications.error(format("HCD.Auto.ApplyFailed", { step: describeStep(step, creatures) }));
+    for (const creature of resolveRecipients(step, creatures)) {
+      const name = creatureName(creature);
+      if (step.type === "save") {
+        saves.push({ step, creature });
+        lines.push(format("HCD.Auto.Result.SaveRequested", { step: describeStep(step, creatures, name) }));
+        continue;
+      }
+      try {
+        // An apply function returns false if the GM skipped the step
+        const applied = await APPLY[step.type](step, creature, { creatures, card, records, name });
+        if (applied !== false) lines.push(describeStep(step, creatures, name));
+      } catch (err) {
+        console.error(`${MODULE_ID} | Failed to apply`, step, err);
+        ui.notifications.error(format("HCD.Auto.ApplyFailed", { step: describeStep(step, creatures, name) }));
+      }
     }
   }
   return { lines, notes, records, saves };
 }
 
 const APPLY = {
-  async condition(step, { actor }, ctx) {
-    if (!step.duration || step.duration === "unlimited") return applyCondition(step, actor, ctx.records);
+  async condition(step, creature, ctx) {
+    if (!step.duration || step.duration === "unlimited") return applyCondition(step, creature.actor, ctx.records);
     // Timed conditions are granted by an effect, so they end together with it
     const uuid = await getConditionUuid(step.condition);
     const rule = { key: "GrantItem", uuid, inMemoryOnly: true };
     if (isValued(step.condition)) rule.alterations = [{ mode: "override", property: "badge-value", value: Number(step.value) || 1 }];
     const label = localize(CONFIG.PF2E.conditionTypes[step.condition] ?? step.condition);
-    await createEffect(actor, ctx, { name: `${ctx.card.title} (${label})`, rules: [rule], duration: step.duration });
+    await createEffect(creature, ctx, { name: `${ctx.card.title} (${label})`, rules: [rule], duration: step.duration });
   },
 
-  async modifier(step, { actor }, ctx) {
+  async modifier(step, creature, ctx) {
     const rule = {
       key: "FlatModifier",
       selector: step.selector,
@@ -181,17 +284,24 @@ const APPLY = {
       value: Number(step.value) || 0,
       label: ctx.card.title
     };
-    await createEffect(actor, ctx, { name: ctx.card.title, rules: [rule], duration: step.duration });
+    await createEffect(creature, ctx, { name: ctx.card.title, rules: [rule], duration: step.duration });
   },
 
-  async effect(step, { actor }, ctx) {
-    await createEffect(actor, ctx, { name: step.name || ctx.card.title, rules: step.rules ?? [], duration: step.duration });
+  async effect(step, creature, ctx) {
+    await createEffect(creature, ctx, { name: step.name || ctx.card.title, rules: step.rules ?? [], duration: step.duration });
   },
 
   async damage(step, { actor, token }, ctx) {
     if (!token) throw new Error(`${actor.name} has no token to apply damage to`);
+    // Rolled at the table: the GM's total replaces the formula, damage type and IWR still apply
+    let formula = step.formula;
+    if (askForRolls()) {
+      const choice = await askDamage({ title: ctx.card.title, damage: describeStep(step, ctx.creatures, ctx.name) });
+      if (choice === null) return false;
+      if (typeof choice === "number") formula = String(choice);
+    }
     const DamageRoll = CONFIG.Dice.rolls.find((cls) => cls.name === "DamageRoll");
-    const roll = await new DamageRoll(`(${step.formula})[${step.damageType}]`).evaluate();
+    const roll = await new DamageRoll(`(${formula})[${step.damageType}]`).evaluate();
     await roll.toMessage({
       speaker: ChatMessage.getSpeaker({ actor, token }),
       flavor: ctx.card.title,
@@ -209,6 +319,36 @@ const APPLY = {
     });
     const [item] = await actor.createEmbeddedDocuments("Item", [source]);
     if (item) ctx.records.push({ type: "created", actorUuid: actor.uuid, itemId: item.id });
+  },
+
+  /** The GM places the token on one of the highlighted spaces (placement.js). */
+  async move(step, { actor, token }, ctx) {
+    if (!token?.object || token.parent !== canvas.scene) {
+      ui.notifications.warn(format("HCD.Auto.Move.OtherScene", { name: ctx.name }));
+      return false;
+    }
+    if (canvas.grid.isGridless) {
+      ui.notifications.warn(gridlessMessage());
+      return false;
+    }
+    const from = step.mode === "free" ? null : ctx.creatures[step.from]?.token ?? null;
+    if (step.mode !== "free" && (!from?.object || from === token)) {
+      ui.notifications.warn(format("HCD.Auto.Move.NoOrigin", { name: ctx.name }));
+      return false;
+    }
+    const distance = resolveDistance(step.distance, actor);
+    const destinations = findDestinations(token, { distance, mode: step.mode, from });
+    if (!destinations.length) {
+      ui.notifications.warn(noDestinationsMessage(ctx.name));
+      return false;
+    }
+    const label = describeStep({ ...step, distance }, ctx.creatures, ctx.name);
+    const destination = await pickDestination(token, destinations, label);
+    if (!destination) return false;
+    const previous = { x: token.x, y: token.y };
+    // Spaces were checked for walls already; forced movement costs nothing
+    await token.move({ x: destination.x, y: destination.y }, { constrainOptions: { ignoreWalls: true, ignoreCost: true } });
+    ctx.records.push({ type: "move", tokenUuid: token.uuid, x: previous.x, y: previous.y });
   }
 };
 
@@ -230,9 +370,11 @@ async function applyCondition(step, actor, records) {
   if (item) records.push({ type: "created", actorUuid: actor.uuid, itemId: item.id });
 }
 
-async function createEffect(actor, { creatures, card, records }, { name, rules, duration }) {
-  const data = resolveDuration(duration, creatures);
-  const anchor = data.anchor ? creatures[data.anchor] : null;
+async function createEffect(recipient, { creatures, card, records }, { name, rules, duration }) {
+  // "own" durations are counted on the recipient's turn
+  const anchors = { ...creatures, recipient };
+  const data = resolveDuration(duration, anchors);
+  const anchor = data.anchor ? anchors[data.anchor] : null;
   const source = {
     type: "effect",
     name,
@@ -250,13 +392,14 @@ async function createEffect(actor, { creatures, card, records }, { name, rules, 
     },
     flags: { [MODULE_ID]: { cardId: card.id } }
   };
-  const [item] = await actor.createEmbeddedDocuments("Item", [source]);
-  if (item) records.push({ type: "created", actorUuid: actor.uuid, itemId: item.id });
+  const [item] = await recipient.actor.createEmbeddedDocuments("Item", [source]);
+  if (item) records.push({ type: "created", actorUuid: recipient.actor.uuid, itemId: item.id });
 }
 
 /**
  * PF2e duration data for a duration key. "Next turn" durations end on the anchor's turn
  * later in this round if it hasn't acted yet, otherwise on its turn in the next round.
+ * @param {object} creatures  Including `recipient`, the anchor of "own" durations.
  */
 function resolveDuration(key, creatures) {
   const data = { ...(DURATIONS[key] ?? DURATIONS.unlimited) };
@@ -282,9 +425,14 @@ async function getConditionUuid(slug) {
 /*  Undo                                        */
 /* -------------------------------------------- */
 
-/** Remove created effects and conditions, restore raised condition values. */
+/** Remove created effects and conditions, restore raised condition values, move tokens back. */
 export async function undoRecords(records = []) {
   for (const record of [...records].reverse()) {
+    if (record.type === "move") {
+      const token = fromUuidSync(record.tokenUuid);
+      await token?.move({ x: record.x, y: record.y, action: "displace" });
+      continue;
+    }
     const actor = fromUuidSync(record.actorUuid);
     const item = actor?.items.get(record.itemId);
     if (!item) continue;

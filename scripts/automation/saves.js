@@ -1,8 +1,9 @@
 import { DEGREES, MODULE_ID, SOCKET } from "../constants.js";
 import { escapeHTML, format, localize } from "../utils.js";
 import { OUTCOME_FALLBACK, SAVES } from "./schema.js";
-import { applyPlan, resolveCreatures } from "./apply.js";
+import { applyPlan } from "./apply.js";
 import { postResult } from "./results.js";
+import { askForRolls, askSaveResult } from "./table-rolls.js";
 
 /*
  * Save steps. A creature controlled by a connected player gets a chat card with a roll
@@ -11,6 +12,8 @@ import { postResult } from "./results.js";
  *
  * Pending saves live in the chat message flags, so they survive a reload. The GM can roll
  * for the player or set the result by hand from the same chat card.
+ *
+ * Before any of this, the GM may enter a result rolled at the table instead (table-rolls.js).
  */
 
 /**
@@ -23,7 +26,7 @@ import { postResult } from "./results.js";
 export async function runPlan(plan, { card, info = {} }, title, { always = false } = {}) {
   const { lines, notes, records, saves } = await applyPlan(plan, { card, info });
   if (always || lines.length || notes.length) await postResult(title, lines, notes, records);
-  for (const step of saves) await requestSave(step, { card, info });
+  for (const { step, creature } of saves) await requestSave(step, creature, { card, info });
 }
 
 /** Active non-GM users owning the actor. */
@@ -31,12 +34,11 @@ function controllingPlayers(actor) {
   return game.users.filter((u) => u.active && !u.isGM && actor.testUserPermission(u, "OWNER"));
 }
 
-async function requestSave(step, { card, info }) {
-  const creature = resolveCreatures(info)[step.recipient];
-  if (!creature) return;
-  const { actor, token } = creature;
+/** Roll a save for one creature (each creature of an area step rolls on its own). */
+async function requestSave(step, { actor, token }, { card, info }) {
   const request = {
     actorUuid: actor.uuid,
+    tokenUuid: token?.uuid ?? null,
     actorName: token?.name ?? actor.name,
     save: step.save,
     dc: step.dc,
@@ -48,11 +50,22 @@ async function requestSave(step, { card, info }) {
   };
 
   const players = controllingPlayers(actor);
-  if (!players.length) {
+  // Dice rolled at the table: the GM enters the result
+  const choice = askForRolls()
+    ? await askSaveResult({
+      title: card.title,
+      check: describeRequest(request),
+      flat: request.save === "flat",
+      playerRolls: players.length > 0
+    })
+    : "foundry";
+  if (typeof choice === "number") return resolveSave(request, choice);
+
+  if (choice === "foundry" && !players.length) {
     const degree = await rollSave(request, { skipDialog: true });
     if (degree !== null) return resolveSave(request, degree);
   }
-  // A player rolls themselves (or the GM's roll was cancelled): ask in chat
+  // A player rolls themselves (or the GM's roll or dialog was cancelled): ask in chat
   await ChatMessage.create({
     content: renderRequest(request),
     speaker: { alias: localize("HCD.ModuleShort") },
@@ -102,12 +115,20 @@ async function resolveSave(request, degree, message = null) {
     actor: request.actorName,
     outcome: localize(`HCD.Auto.Degree.${outcome}`)
   });
-  await runPlan(steps, { card: request.card, info: request.info }, title, { always: true });
+  // Outcome steps address the creature that rolled as "saver"
+  const info = { ...request.info, saverActorUuid: request.actorUuid, saverTokenUuid: request.tokenUuid };
+  await runPlan(steps, { card: request.card, info }, title, { always: true });
+}
+
+/** "Goblin: Fortitude save DC 24" */
+function describeRequest(request) {
+  const save = localize(SAVES[request.save] ?? request.save);
+  return `${request.actorName}: ${format("HCD.Auto.Describe.save", { save, dc: request.dc })}`;
 }
 
 function renderRequest(request) {
   const save = localize(SAVES[request.save] ?? request.save);
-  const check = `${escapeHTML(request.actorName)}: ${escapeHTML(format("HCD.Auto.Describe.save", { save, dc: request.dc }))}`;
+  const check = escapeHTML(describeRequest(request));
   if (request.state !== "pending") {
     return `<div class="hcd-save-request hcd-resolved">
       <p class="hcd-result-header">${escapeHTML(request.card.title)}</p>

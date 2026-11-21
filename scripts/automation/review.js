@@ -2,9 +2,17 @@ import { MODULE_ID, TEMPLATES } from "../constants.js";
 import { getDamageTypeChoices } from "../deck.js";
 import { localize } from "../utils.js";
 import {
-  DURATIONS, MODIFIER_SELECTORS, MODIFIER_TYPES, OUTCOME_FALLBACK, OUTCOMES, RECIPIENTS, SAVES, STEP_TYPES
+  AFFECTS, AREA_DEFAULTS, AREA_FIELDS, CENTERS, DURATIONS, MODIFIER_SELECTORS, MODIFIER_TYPES, MOVE_MODES,
+  OUTCOME_FALLBACK, OUTCOMES, PICKS, RECIPIENTS, SAVES, SPEED_DISTANCES, STEP_TYPES
 } from "./schema.js";
-import { describeStep, resolveCreatures } from "./apply.js";
+import { describeStep, planArea, resolveCreatures } from "./apply.js";
+
+/** Editable fields of a step: those of its type, plus the area fields for area recipients. */
+function fieldsOf(step) {
+  const fields = { ...STEP_TYPES[step.type].fields };
+  if (step.recipient === "area") Object.assign(fields, AREA_FIELDS);
+  return fields;
+}
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -62,17 +70,47 @@ export class AutomationReview extends HandlebarsApplicationMixin(ApplicationV2) 
         isNote: step.type === "note",
         icon: STEP_TYPES[step.type].icon,
         description: describeStep(step, this.creatures),
-        fields: Object.entries(STEP_TYPES[step.type].fields).map(([key, kind]) => ({
+        fields: Object.entries(fieldsOf(step)).map(([key, kind]) => ({
           key,
           kind,
           label: `HCD.Auto.Field.${key}`,
           value: step[key] ?? "",
           choices: choices[kind] ?? null,
-          isNumber: kind === "number" || kind === "dc"
-        }))
+          isNumber: kind === "number" || kind === "dc",
+          isBoolean: kind === "boolean"
+        })),
+        // Creatures found for an area step; the GM picks who is affected
+        hasCandidates: Array.isArray(step.candidates),
+        candidates: step.candidates?.map((c, index) => ({ index, name: c.name, checked: step.chosen?.includes(c.uuid) }))
       })),
       hasSteps: this.plan.some((s) => s.enabled && s.type !== "note")
     });
+  }
+
+  _onFirstRender(context, options) {
+    super._onFirstRender(context, options);
+    // Who is affected changed: find the creatures of the area again
+    this.element.addEventListener("change", (event) => {
+      if (!this.#editing) return;
+      const match = /^(steps\.\d+)\.(recipient|center|radius|affects|pick|includeCenter|excludeTarget)$/.exec(event.target.name ?? "");
+      if (!match) return;
+      this.#syncFromForm();
+      const step = this.#getStep(match[1]);
+      if (!step) return;
+      if (step.recipient === "area") {
+        for (const [key, value] of Object.entries(AREA_DEFAULTS)) step[key] ??= value;
+        planArea(step, this.creatures);
+      } else {
+        delete step.candidates;
+        delete step.chosen;
+      }
+      this.render();
+    });
+  }
+
+  /** A plan step by its form path, e.g. "steps.0" or "steps.0.outcomes.failure.1". */
+  #getStep(path) {
+    return path.split(".").reduce((node, key) => node?.[key], { steps: this.plan });
   }
 
   /**
@@ -101,21 +139,33 @@ export class AutomationReview extends HandlebarsApplicationMixin(ApplicationV2) 
 
   /** Options of the select field kinds. */
   #choices() {
-    const recipient = Object.fromEntries(Object.entries(RECIPIENTS).map(([key, label]) => {
-      const name = this.creatures[key]?.actor.name ?? localize("HCD.Auto.NoRecipient");
+    // "Target (Goblin)"; the saver and area creatures are only known later
+    const withName = (entries) => Object.fromEntries(Object.entries(entries).map(([key, label]) => {
+      if (!(key in CENTERS)) return [key, localize(label)];
+      const creature = this.creatures[key];
+      const name = creature ? (creature.token?.name ?? creature.actor.name) : localize("HCD.Auto.NoRecipient");
       return [key, `${localize(label)} (${name})`];
     }));
     const condition = Object.fromEntries(Object.entries(CONFIG.PF2E?.conditionTypes ?? {})
       .map(([slug, label]) => [slug, localize(label)])
       .sort((a, b) => a[1].localeCompare(b[1])));
+    const units = canvas.scene?.grid.units || "ft";
     return {
-      recipient,
+      recipient: withName(RECIPIENTS),
+      center: withName(CENTERS),
       condition,
       duration: Object.fromEntries(Object.keys(DURATIONS).map((key) => [key, `HCD.Auto.Duration.${key}`])),
       selector: MODIFIER_SELECTORS,
       modifierType: MODIFIER_TYPES,
       damageType: getDamageTypeChoices(),
-      save: SAVES
+      save: SAVES,
+      affects: AFFECTS,
+      pick: PICKS,
+      moveMode: MOVE_MODES,
+      distance: {
+        ...Object.fromEntries([5, 10, 15, 20, 25, 30, 40, 50, 60].map((d) => [d, `${d} ${units}`])),
+        ...Object.fromEntries(Object.keys(SPEED_DISTANCES).map((key) => [key, `HCD.Auto.Distance.${key}`]))
+      }
     };
   }
 
@@ -127,8 +177,9 @@ export class AutomationReview extends HandlebarsApplicationMixin(ApplicationV2) 
       for (const [index, stepValues] of Object.entries(values)) {
         const step = steps[Number(index)];
         if (!step) continue;
-        const { outcomes, ...fields } = stepValues;
+        const { outcomes, chosen, ...fields } = stepValues;
         Object.assign(step, fields, { enabled: !!fields.enabled });
+        if (step.candidates && chosen) step.chosen = step.candidates.filter((c, i) => chosen[i]).map((c) => c.uuid);
         for (const [degree, children] of Object.entries(outcomes ?? {})) merge(step.outcomes?.[degree] ?? [], children);
       }
     };

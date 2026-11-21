@@ -97,6 +97,12 @@
         "Name": "Karteneffekte anwenden",
         "Hint": "Nach dem Aufdecken einer Karte erhält der SL eine Zusammenfassung, was die Karte bewirkt (Zustände, Effekte, Schaden), und kann sie auf die Kreaturen anwenden, vorher bearbeiten oder überspringen. Ist die Option deaktiviert, sind Karten reiner Text."
       },
+      "cardRolls": {
+        "Name": "Würfe von Karten",
+        "Hint": "Rettungswürfe und Schaden, die angewendete Karten verlangen. Bei „Jedes Mal fragen“ kannst du ein am Tisch mit echten Würfeln gewürfeltes Ergebnis eingeben oder in Foundry würfeln.",
+        "ask": "Jedes Mal fragen (Würfel am Tisch oder Foundry)",
+        "foundry": "Immer in Foundry würfeln"
+      },
       "animations": {
         "Name": "Kartenanimationen",
         "Hint": "Zieh- und Umdreh-Animationen auf diesem Client abspielen."
@@ -215,7 +221,9 @@
       "ApplyFailed": "Konnte nicht angewendet werden: {step}. Details in der Konsole (F12).",
       "Recipient": {
         "self": "Ziehende Kreatur",
-        "target": "Ziel"
+        "target": "Ziel",
+        "saver": "Würfelnde Kreatur",
+        "area": "Kreaturen in einem Bereich"
       },
       "Field": {
         "recipient": "Betrifft",
@@ -229,7 +237,16 @@
         "damageType": "Schadensart",
         "text": "Hinweis",
         "save": "Wurf",
-        "dc": "SG"
+        "dc": "SG",
+        "center": "Um",
+        "radius": "Innerhalb (ft)",
+        "affects": "Betrifft",
+        "pick": "Wie viele",
+        "includeCenter": "Zentrale Kreatur einschließen",
+        "excludeTarget": "Ziel ausschließen",
+        "mode": "Bewegung",
+        "from": "Bezogen auf",
+        "distance": "Bis zu"
       },
       "Save": {
         "fortitude": "Zähigkeitswurf",
@@ -251,6 +268,15 @@
         "criticalFailure": "Kritischer Fehlschlag"
       },
       "FlatFlavor": "{title}: Pauschaler Wurf SG {dc}",
+      "TableRoll": {
+        "SaveTitle": "Rettungswurf: {title}",
+        "SaveHint": "Am Tisch gewürfelt? Wähle das Ergebnis. Sonst würfelt Foundry.",
+        "DamageTitle": "Schaden: {title}",
+        "DamageTotal": "Am Tisch gewürfelte Summe",
+        "ApplyTotal": "Diese Summe anwenden",
+        "Foundry": "In Foundry würfeln",
+        "PlayerRolls": "Spieler würfelt in Foundry"
+      },
       "Duration": {
         "unlimited": "bis zur Entfernung",
         "selfTurnEnd": "bis zum Ende des Zuges der ziehenden Kreatur",
@@ -259,7 +285,9 @@
         "targetNextStart": "bis zum Beginn des nächsten Zuges des Ziels",
         "targetNextEnd": "bis zum Ende des nächsten Zuges des Ziels",
         "minute": "für 1 Minute",
-        "encounter": "bis zum Ende der Begegnung"
+        "encounter": "bis zum Ende der Begegnung",
+        "ownNextStart": "bis zum Beginn ihres eigenen nächsten Zuges",
+        "ownNextEnd": "bis zum Ende ihres eigenen nächsten Zuges"
       },
       "Selector": {
         "ac": "RK",
@@ -282,14 +310,24 @@
         "modifier": "{value} auf {selector} ({type})",
         "damage": "{formula} Schaden ({type})",
         "persistent": "{formula} anhaltender Schaden ({type})",
-        "save": "{save} SG {dc}"
+        "save": "{save} SG {dc}",
+        "area": "{affects} im Umkreis von {radius} ft um {center}",
+        "move": {
+          "push": "bis zu {distance} von {from} weggestoßen",
+          "free": "bis zu {distance} bewegt",
+          "adjacent": "bis zu {distance} auf ein Feld neben {from} bewegt"
+        }
       },
       "Effects": {
         "noReactions": "Kann keine Reaktionen nutzen"
       },
       "Notes": {
         "nextStrikeOnly": "Der Bonus gilt nur für den nächsten Schlag gegen das Ziel – entferne den Effekt danach.",
-        "weaponBroken": "Die Waffe ist zerbrochen und kann nicht repariert werden – auf dem Charakterbogen vermerken."
+        "weaponBroken": "Die Waffe ist zerbrochen und kann nicht repariert werden – auf dem Charakterbogen vermerken.",
+        "collisionDamage": "Prallt das Ziel gegen eine Wand oder ein festes Hindernis, erleidet es 1W6 Wuchtschaden.",
+        "noReactionsForced": "Diese erzwungene Bewegung löst keine Reaktionen aus.",
+        "triggersReactions": "Diese Bewegung kann Reaktionen auslösen.",
+        "reactionStride": "Das ist eine Reaktion der bewegten Kreatur – überspringe die Bewegung, wenn sie sich nicht bewegen will."
       },
       "Review": {
         "Title": "Karteneffekte anwenden",
@@ -298,7 +336,9 @@
         "Enabled": "Diesen Schritt anwenden",
         "Apply": "Anwenden",
         "Edit": "Bearbeiten",
-        "Skip": "Nicht anwenden"
+        "Skip": "Nicht anwenden",
+        "Affected": "Betroffene Kreaturen",
+        "NoneFound": "Keine passenden Kreaturen in der Szene."
       },
       "Result": {
         "Title": "Angewendet: {title}",
@@ -307,6 +347,31 @@
         "Nothing": "Keine Wirkung.",
         "Undo": "Rückgängig",
         "Undone": "Rückgängig gemacht"
+      },
+      "Affects": {
+        "enemies": "Gegner",
+        "allies": "Verbündete",
+        "creatures": "Kreaturen"
+      },
+      "Pick": {
+        "all": "Alle",
+        "one": "Eine (die nächste)"
+      },
+      "MoveMode": {
+        "push": "Wegstoßen",
+        "free": "Auf ein beliebiges Feld",
+        "adjacent": "Neben eine Kreatur"
+      },
+      "Distance": {
+        "speed": "ihre Bewegungsrate",
+        "halfSpeed": "die Hälfte ihrer Bewegungsrate"
+      },
+      "Move": {
+        "Instruction": "{label} – klicke auf ein hervorgehobenes Feld, um den Spielstein zu platzieren. Rechtsklick oder Esc überspringt die Bewegung.",
+        "NoSpace": "{name} kann nicht bewegt werden: Es ist kein freies Feld in Reichweite.",
+        "Gridless": "Das Bewegen von Spielsteinen durch Karten braucht eine Szene mit Raster. Bewege den Spielstein von Hand.",
+        "OtherScene": "{name} ist nicht in der Szene, die du gerade ansiehst. Bewege den Spielstein von Hand.",
+        "NoOrigin": "{name} kann nicht bewegt werden: Die Kreatur, auf die sich die Bewegung bezieht, fehlt."
       }
     }
   }

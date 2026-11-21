@@ -57,6 +57,11 @@ export function registerSettings() {
   });
   register("revealPopup", { type: Boolean, default: true });
   register("automation", { type: Boolean, default: false });
+  register("cardRolls", {
+    type: String,
+    default: "ask",
+    choices: choices("cardRolls", ["ask", "foundry"])
+  });
   register("animations", { type: Boolean, default: true, scope: "client", restricted: false });
 
   // Hidden data storage

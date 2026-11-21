@@ -19,11 +19,23 @@
       </select>
       {{else if isNumber}}
       <input type="number" name="{{../path}}.{{key}}" value="{{value}}" step="1">
+      {{else if isBoolean}}
+      <input type="checkbox" name="{{../path}}.{{key}}" {{checked value}}>
       {{else}}
       <input type="text" name="{{../path}}.{{key}}" value="{{value}}">
       {{/if}}
     </div>
     {{/each}}
+    {{#if hasCandidates}}
+    <div class="form-group stacked hcd-review-candidates">
+      <label>{{localize "HCD.Auto.Review.Affected"}}</label>
+      {{#each candidates}}
+      <label class="checkbox"><input type="checkbox" name="{{../path}}.chosen.{{index}}" {{checked checked}}> {{name}}</label>
+      {{else}}
+      <p class="hint">{{localize "HCD.Auto.Review.NoneFound"}}</p>
+      {{/each}}
+    </div>
+    {{/if}}
   </fieldset>
   {{/each}}
 

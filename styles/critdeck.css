@@ -672,3 +672,23 @@
 .hcd-save-degrees button { font-size: var(--font-size-12, 12px); }
 
 .hcd-save-outcome { font-weight: bold; }
+
+/* ---------- Dice rolled at the table (GM dialog) ---------- */
+.hcd-table-roll .form-footer {
+  flex-wrap: wrap;
+}
+
+.hcd-table-roll .form-footer button {
+  flex: 1 1 40%;
+}
+
+.hcd-table-roll .form-footer button[data-action="foundry"] {
+  flex-basis: 100%;
+}
+
+.hcd-review-candidates .checkbox {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-weight: normal;
+}

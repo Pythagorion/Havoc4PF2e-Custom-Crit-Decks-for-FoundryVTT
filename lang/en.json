@@ -97,6 +97,12 @@
         "Name": "Apply Card Effects",
         "Hint": "After a card is revealed, the GM gets a summary of what the card does (conditions, effects, damage) and can apply it to the creatures, edit it first or skip it. If disabled, cards are plain text."
       },
+      "cardRolls": {
+        "Name": "Rolls from Cards",
+        "Hint": "Saving throws and damage that applied cards call for. Ask each time lets you enter a result rolled with physical dice at the table, or roll in Foundry.",
+        "ask": "Ask each time (dice at the table or Foundry)",
+        "foundry": "Always roll in Foundry"
+      },
       "animations": {
         "Name": "Card Animations",
         "Hint": "Play the draw and flip animations on this client."
@@ -215,7 +221,9 @@
       "ApplyFailed": "Could not apply: {step}. See the console (F12) for details.",
       "Recipient": {
         "self": "Drawing creature",
-        "target": "Target"
+        "target": "Target",
+        "saver": "Creature that rolled",
+        "area": "Creatures in an area"
       },
       "Field": {
         "recipient": "Applies To",
@@ -229,7 +237,16 @@
         "damageType": "Damage Type",
         "text": "Note",
         "save": "Save",
-        "dc": "DC"
+        "dc": "DC",
+        "center": "Around",
+        "radius": "Within (ft)",
+        "affects": "Affects",
+        "pick": "How Many",
+        "includeCenter": "Include the center creature",
+        "excludeTarget": "Exclude the target",
+        "mode": "Movement",
+        "from": "Relative To",
+        "distance": "Up To"
       },
       "Save": {
         "fortitude": "Fortitude save",
@@ -251,6 +268,15 @@
         "criticalFailure": "Critical failure"
       },
       "FlatFlavor": "{title}: flat check DC {dc}",
+      "TableRoll": {
+        "SaveTitle": "Saving Throw: {title}",
+        "SaveHint": "Rolled at the table? Pick the result. Otherwise let Foundry roll.",
+        "DamageTitle": "Damage: {title}",
+        "DamageTotal": "Total rolled at the table",
+        "ApplyTotal": "Apply This Total",
+        "Foundry": "Roll in Foundry",
+        "PlayerRolls": "Player Rolls in Foundry"
+      },
       "Duration": {
         "unlimited": "until removed",
         "selfTurnEnd": "until the end of the drawing creature's turn",
@@ -259,7 +285,9 @@
         "targetNextStart": "until the start of the target's next turn",
         "targetNextEnd": "until the end of the target's next turn",
         "minute": "for 1 minute",
-        "encounter": "until the end of the encounter"
+        "encounter": "until the end of the encounter",
+        "ownNextStart": "until the start of its own next turn",
+        "ownNextEnd": "until the end of its own next turn"
       },
       "Selector": {
         "ac": "AC",
@@ -282,14 +310,24 @@
         "modifier": "{value} {type} to {selector}",
         "damage": "{formula} {type} damage",
         "persistent": "{formula} persistent {type} damage",
-        "save": "{save} DC {dc}"
+        "save": "{save} DC {dc}",
+        "area": "{affects} within {radius} ft of {center}",
+        "move": {
+          "push": "pushed up to {distance} away from {from}",
+          "free": "moved up to {distance}",
+          "adjacent": "moved up to {distance} to a space next to {from}"
+        }
       },
       "Effects": {
         "noReactions": "Can't use reactions"
       },
       "Notes": {
         "nextStrikeOnly": "The bonus only applies to the next Strike against the target – remove the effect after it.",
-        "weaponBroken": "The weapon is broken and can't be repaired – mark it on the character sheet."
+        "weaponBroken": "The weapon is broken and can't be repaired – mark it on the character sheet.",
+        "collisionDamage": "If the target hits a wall or solid obstacle, it takes 1d6 bludgeoning damage.",
+        "noReactionsForced": "This forced movement doesn't trigger reactions.",
+        "triggersReactions": "This movement can trigger reactions.",
+        "reactionStride": "This is a reaction of the moved creature – skip the movement if it doesn't want to move."
       },
       "Review": {
         "Title": "Apply Card Effects",
@@ -298,7 +336,9 @@
         "Enabled": "Apply this step",
         "Apply": "Apply",
         "Edit": "Edit",
-        "Skip": "Don't Apply"
+        "Skip": "Don't Apply",
+        "Affected": "Affected creatures",
+        "NoneFound": "No matching creatures on the scene."
       },
       "Result": {
         "Title": "Applied: {title}",
@@ -307,6 +347,31 @@
         "Nothing": "No effect.",
         "Undo": "Undo",
         "Undone": "Undone"
+      },
+      "Affects": {
+        "enemies": "enemies",
+        "allies": "allies",
+        "creatures": "creatures"
+      },
+      "Pick": {
+        "all": "All of them",
+        "one": "One of them (closest)"
+      },
+      "MoveMode": {
+        "push": "Push away",
+        "free": "Move to any space",
+        "adjacent": "Move next to"
+      },
+      "Distance": {
+        "speed": "its Speed",
+        "halfSpeed": "half its Speed"
+      },
+      "Move": {
+        "Instruction": "{label} – click a highlighted space to place the token. Right-click or Esc skips the movement.",
+        "NoSpace": "{name} can't be moved: there is no free space in reach.",
+        "Gridless": "Moving tokens from cards needs a scene with a grid. Move the token by hand.",
+        "OtherScene": "{name} is not on the scene you are viewing. Move the token by hand.",
+        "NoOrigin": "{name} can't be moved: the creature it should be moved relative to is missing."
       }
     }
   }
