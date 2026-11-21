@@ -2,7 +2,7 @@ import { MODULE_ID, TEMPLATES } from "../constants.js";
 import { getDamageTypeChoices } from "../deck.js";
 import { localize } from "../utils.js";
 import {
-  AFFECTS, AREA_DEFAULTS, AREA_FIELDS, CENTERS, DURATIONS, MODIFIER_SELECTORS, MODIFIER_TYPES, MOVE_MODES,
+  AFFECTS, AGAINST, AREA_DEFAULTS, AREA_FIELDS, CENTERS, DURATIONS, MODIFIER_SELECTORS, MODIFIER_TYPES, MOVE_MODES,
   OUTCOME_FALLBACK, OUTCOMES, PICKS, RECIPIENTS, SAVES, SPEED_DISTANCES, STEP_TYPES
 } from "./schema.js";
 import { describeStep, planArea, resolveCreatures } from "./apply.js";
@@ -125,9 +125,9 @@ export class AutomationReview extends HandlebarsApplicationMixin(ApplicationV2) 
       for (const degree of OUTCOMES) {
         const children = step.outcomes?.[degree];
         if (!children?.length) continue;
-        // A missing critical outcome uses this one, so name both
+        // A missing critical outcome uses this one, so name both (an empty list means "nothing happens")
         const covers = Object.entries(OUTCOME_FALLBACK)
-          .filter(([critical, plain]) => plain === degree && !step.outcomes[critical]?.length)
+          .filter(([critical, plain]) => plain === degree && !Array.isArray(step.outcomes[critical]))
           .map(([critical]) => critical);
         const heading = [degree, ...covers].map((d) => localize(`HCD.Auto.Degree.${d}`)).join(" / ");
         this.#flatten(children, `${path}.outcomes.${degree}`, depth + 1)
@@ -157,6 +157,7 @@ export class AutomationReview extends HandlebarsApplicationMixin(ApplicationV2) 
       duration: Object.fromEntries(Object.keys(DURATIONS).map((key) => [key, `HCD.Auto.Duration.${key}`])),
       selector: MODIFIER_SELECTORS,
       modifierType: MODIFIER_TYPES,
+      against: AGAINST,
       damageType: getDamageTypeChoices(),
       save: SAVES,
       affects: AFFECTS,

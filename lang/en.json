@@ -246,7 +246,8 @@
         "excludeTarget": "Exclude the target",
         "mode": "Movement",
         "from": "Relative To",
-        "distance": "Up To"
+        "distance": "Up To",
+        "against": "Only"
       },
       "Save": {
         "fortitude": "Fortitude save",
@@ -299,7 +300,15 @@
         "reflex": "Reflex saves",
         "will": "Will saves",
         "skill-check": "skill checks",
-        "all-speeds": "Speed"
+        "all-speeds": "Speed",
+        "land-speed": "land Speed",
+        "strike-attack-roll": "Strike attack rolls",
+        "strike-damage": "Strike damage rolls",
+        "spell-attack-roll": "spell attack rolls",
+        "spell-dc": "spell DCs",
+        "intimidation": "Intimidation checks",
+        "weapon-attack": "attack rolls with this weapon",
+        "weapon-damage": "damage rolls with this weapon"
       },
       "ModifierType": {
         "circumstance": "circumstance",
@@ -316,10 +325,21 @@
           "push": "pushed up to {distance} away from {from}",
           "free": "moved up to {distance}",
           "adjacent": "moved up to {distance} to a space next to {from}"
-        }
+        },
+        "against": {
+          "self": "against {name}",
+          "target": "against {name}",
+          "notSelf": "against everyone except {name}",
+          "notTarget": "against everyone except {name}"
+        },
+        "heal": "regains {formula} Hit Points",
+        "tempHP": "{formula} temporary Hit Points",
+        "weakness": "weakness {formula} to {type}",
+        "reduceCondition": "reduces {condition} by {value}"
       },
       "Effects": {
-        "noReactions": "Can't use reactions"
+        "noReactions": "Can't use reactions",
+        "noHealing": "Can't regain Hit Points"
       },
       "Notes": {
         "nextStrikeOnly": "The bonus only applies to the next Strike against the target – remove the effect after it.",
@@ -327,7 +347,16 @@
         "collisionDamage": "If the target hits a wall or solid obstacle, it takes 1d6 bludgeoning damage.",
         "noReactionsForced": "This forced movement doesn't trigger reactions.",
         "triggersReactions": "This movement can trigger reactions.",
-        "reactionStride": "This is a reaction of the moved creature – skip the movement if it doesn't want to move."
+        "reactionStride": "This is a reaction of the moved creature – skip the movement if it doesn't want to move.",
+        "manual": "Not everything on this card can be automated – apply the rest of the card text by hand.",
+        "nextRollOnly": "This only counts for the next roll – remove the effect after it.",
+        "bleedLinked": "The other effects end together with the bleeding – remove them when the persistent bleed damage ends.",
+        "sustainEnds": "The sustained spell or effect ends.",
+        "dropWeapon": "The target drops one weapon it holds; it lands 10 feet away in a direction of the attacker's choice.",
+        "heroPoint": "If the character has no Hero Points, it gains 1 Hero Point. Otherwise switch on the temporary Hit Points.",
+        "focusPoint": "If the focus pool isn't full, the caster regains 1 Focus Point. Otherwise switch on the spell attack bonus.",
+        "rangedOnly": "The bonus only applies against ranged attacks.",
+        "addStrength": "Add the creature's Strength modifier to the damage."
       },
       "Review": {
         "Title": "Apply Card Effects",
@@ -372,6 +401,13 @@
         "Gridless": "Moving tokens from cards needs a scene with a grid. Move the token by hand.",
         "OtherScene": "{name} is not on the scene you are viewing. Move the token by hand.",
         "NoOrigin": "{name} can't be moved: the creature it should be moved relative to is missing."
+      },
+      "Against": {
+        "any": "against everyone",
+        "self": "against the drawing creature",
+        "target": "against the target",
+        "notSelf": "against everyone except the drawing creature",
+        "notTarget": "against everyone except the target"
       }
     }
   }

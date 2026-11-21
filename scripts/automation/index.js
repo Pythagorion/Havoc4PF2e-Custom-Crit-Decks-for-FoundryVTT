@@ -24,7 +24,7 @@ export async function offerAutomation(card, { info = {}, damageTypes = [] } = {}
   if (!steps.length) return;
 
   try {
-    const plan = await AutomationReview.wait({ card, plan: buildPlan(steps, { info, damageTypes }), info });
+    const plan = await AutomationReview.wait({ card, plan: buildPlan(steps, { card, info, damageTypes }), info });
     if (!plan) return;
     await runPlan(plan, { card, info }, format("HCD.Auto.Result.Title", { title: card.title }));
   } catch (err) {

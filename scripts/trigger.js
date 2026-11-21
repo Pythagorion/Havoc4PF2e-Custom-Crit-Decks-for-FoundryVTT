@@ -57,9 +57,24 @@ export function evaluateMessage(message) {
       actorUuid: actor?.uuid ?? null,
       tokenUuid: message.token?.uuid ?? null,
       targetActorUuid: target?.actor?.uuid ?? null,
-      targetTokenUuid: target?.token?.uuid ?? null
+      targetTokenUuid: target?.token?.uuid ?? null,
+      // Used by the card automation (formulas with @rank and @die, weapon selectors)
+      itemId: item?.actor ? item.id : null,
+      spellRank: item?.type === "spell" ? (item.rank ?? null) : null,
+      weaponDie: getWeaponDie(item)
     }
   };
+}
+
+/** One damage die of the weapon or NPC attack, e.g. "1d8". */
+function getWeaponDie(item) {
+  const die = item?.system?.damage?.die;
+  if (typeof die === "string" && /^d\d+$/.test(die)) return `1${die}`;
+  for (const partial of Object.values(item?.system?.damageRolls ?? {})) {
+    const match = /d(\d+)/.exec(partial?.damage ?? "");
+    if (match) return `1d${match[1]}`;
+  }
+  return null;
 }
 
 /** The roll's target as stored by PF2e ({ actor, token }), if any. */

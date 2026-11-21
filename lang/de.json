@@ -246,7 +246,8 @@
         "excludeTarget": "Ziel ausschließen",
         "mode": "Bewegung",
         "from": "Bezogen auf",
-        "distance": "Bis zu"
+        "distance": "Bis zu",
+        "against": "Nur"
       },
       "Save": {
         "fortitude": "Zähigkeitswurf",
@@ -299,7 +300,15 @@
         "reflex": "Reflexwürfe",
         "will": "Willenswürfe",
         "skill-check": "Fertigkeitswürfe",
-        "all-speeds": "Bewegungsrate"
+        "all-speeds": "Bewegungsrate",
+        "land-speed": "Bewegungsrate an Land",
+        "strike-attack-roll": "Angriffswürfe von Schlägen",
+        "strike-damage": "Schadenswürfe von Schlägen",
+        "spell-attack-roll": "Zauberangriffswürfe",
+        "spell-dc": "Zauber-SGs",
+        "intimidation": "Einschüchtern-Würfe",
+        "weapon-attack": "Angriffswürfe mit dieser Waffe",
+        "weapon-damage": "Schadenswürfe mit dieser Waffe"
       },
       "ModifierType": {
         "circumstance": "Situation",
@@ -316,10 +325,21 @@
           "push": "bis zu {distance} von {from} weggestoßen",
           "free": "bis zu {distance} bewegt",
           "adjacent": "bis zu {distance} auf ein Feld neben {from} bewegt"
-        }
+        },
+        "against": {
+          "self": "gegen {name}",
+          "target": "gegen {name}",
+          "notSelf": "gegen alle außer {name}",
+          "notTarget": "gegen alle außer {name}"
+        },
+        "heal": "erhält {formula} Trefferpunkte zurück",
+        "tempHP": "{formula} temporäre Trefferpunkte",
+        "weakness": "Schwäche {formula} gegen {type}",
+        "reduceCondition": "senkt {condition} um {value}"
       },
       "Effects": {
-        "noReactions": "Kann keine Reaktionen nutzen"
+        "noReactions": "Kann keine Reaktionen nutzen",
+        "noHealing": "Kann keine Trefferpunkte zurückerhalten"
       },
       "Notes": {
         "nextStrikeOnly": "Der Bonus gilt nur für den nächsten Schlag gegen das Ziel – entferne den Effekt danach.",
@@ -327,7 +347,16 @@
         "collisionDamage": "Prallt das Ziel gegen eine Wand oder ein festes Hindernis, erleidet es 1W6 Wuchtschaden.",
         "noReactionsForced": "Diese erzwungene Bewegung löst keine Reaktionen aus.",
         "triggersReactions": "Diese Bewegung kann Reaktionen auslösen.",
-        "reactionStride": "Das ist eine Reaktion der bewegten Kreatur – überspringe die Bewegung, wenn sie sich nicht bewegen will."
+        "reactionStride": "Das ist eine Reaktion der bewegten Kreatur – überspringe die Bewegung, wenn sie sich nicht bewegen will.",
+        "manual": "Nicht alles auf dieser Karte lässt sich automatisieren – wende den Rest des Kartentexts von Hand an.",
+        "nextRollOnly": "Das gilt nur für den nächsten Wurf – entferne den Effekt danach.",
+        "bleedLinked": "Die anderen Effekte enden zusammen mit der Blutung – entferne sie, wenn der anhaltende Blutungsschaden endet.",
+        "sustainEnds": "Der aufrechterhaltene Zauber oder Effekt endet.",
+        "dropWeapon": "Das Ziel lässt eine gehaltene Waffe fallen; sie landet 10 Fuß entfernt in einer Richtung nach Wahl des Angreifers.",
+        "heroPoint": "Hat der Charakter keine Heldenpunkte, erhält er 1 Heldenpunkt. Andernfalls schalte die temporären Trefferpunkte ein.",
+        "focusPoint": "Ist der Fokuspool nicht voll, erhält der Zaubernde 1 Fokuspunkt zurück. Andernfalls schalte den Zauberangriffsbonus ein.",
+        "rangedOnly": "Der Bonus gilt nur gegen Fernkampfangriffe.",
+        "addStrength": "Addiere den Stärkemodifikator der Kreatur zum Schaden."
       },
       "Review": {
         "Title": "Karteneffekte anwenden",
@@ -372,6 +401,13 @@
         "Gridless": "Das Bewegen von Spielsteinen durch Karten braucht eine Szene mit Raster. Bewege den Spielstein von Hand.",
         "OtherScene": "{name} ist nicht in der Szene, die du gerade ansiehst. Bewege den Spielstein von Hand.",
         "NoOrigin": "{name} kann nicht bewegt werden: Die Kreatur, auf die sich die Bewegung bezieht, fehlt."
+      },
+      "Against": {
+        "any": "gegen alle",
+        "self": "gegen die ziehende Kreatur",
+        "target": "gegen das Ziel",
+        "notSelf": "gegen alle außer der ziehenden Kreatur",
+        "notTarget": "gegen alle außer dem Ziel"
       }
     }
   }

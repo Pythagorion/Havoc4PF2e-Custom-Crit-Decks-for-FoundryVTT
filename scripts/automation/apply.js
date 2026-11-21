@@ -2,7 +2,8 @@ import { MODULE_ID } from "../constants.js";
 import { damageTypeLabel } from "../deck.js";
 import { escapeHTML, format, localize, textToHTML } from "../utils.js";
 import {
-  AFFECTS, DURATIONS, MODIFIER_SELECTORS, MODIFIER_TYPES, SAVES, SPEED_DISTANCES, STEP_TYPES, WEAPON_DAMAGE
+  AFFECTS, DEFENSE_SELECTORS, DURATIONS, MODIFIER_SELECTORS, MODIFIER_TYPES, SAVES, SPEED_DISTANCES, STEP_TYPES,
+  WEAPON_DAMAGE
 } from "./schema.js";
 import { askDamage, askForRolls } from "./table-rolls.js";
 import { findDestinations, gridlessMessage, moveLabel, noDestinationsMessage, pickDestination } from "./placement.js";
@@ -96,13 +97,17 @@ export function planArea(step, creatures) {
  * DCs and area creatures filled in, steps without a recipient switched off.
  * Outcome steps of saves are only resolved once the save was rolled.
  */
-export function buildPlan(steps, { info = {}, damageTypes = [] } = {}) {
+export function buildPlan(steps, { card = null, info = {}, damageTypes = [] } = {}) {
   const creatures = resolveCreatures(info);
+  const vars = formulaVars(info, creatures);
   const prepare = (step, nested) => {
-    const planned = { ...step, enabled: true };
+    // Alternatives ship switched off, the GM can switch them on
+    const planned = { ...step, enabled: step.enabled !== false };
+    if (step.type === "effect" && !planned.name && card) planned.name = card.title;
     if (planned.name) planned.name = localize(planned.name);
     if (planned.text) planned.text = localize(planned.text);
     if (planned.damageType === WEAPON_DAMAGE) planned.damageType = damageTypes[0] ?? "bludgeoning";
+    if (typeof planned.formula === "string") planned.formula = resolveFormula(planned.formula, vars);
     if (!nested && "recipient" in STEP_TYPES[step.type].fields) {
       if (step.recipient === "area") planArea(planned, creatures);
       if (!resolveRecipients(planned, creatures).length) planned.enabled = false;
@@ -116,6 +121,32 @@ export function buildPlan(steps, { info = {}, damageTypes = [] } = {}) {
     return planned;
   };
   return steps.map((step) => prepare(step, false));
+}
+
+/** Values of the FORMULA_PLACEHOLDERS for a draw. */
+function formulaVars(info, creatures) {
+  return {
+    level: creatures.self?.actor.level ?? 1,
+    rank: Number(info.spellRank) || 1,
+    die: info.weaponDie || "1d6"
+  };
+}
+
+/**
+ * Fill in @level, @rank and @die. Formulas without dice are calculated right away,
+ * so "floor(@rank / 2)" becomes "1" and shows as a plain number in the review.
+ */
+export function resolveFormula(formula, vars) {
+  const filled = String(formula)
+    .replaceAll("@level", vars.level)
+    .replaceAll("@rank", vars.rank)
+    .replaceAll("@die", vars.die);
+  if (/\d*d\d/i.test(filled.replace(/\[[^\]]*\]/g, ""))) return filled;
+  try {
+    return String(Math.floor(Roll.safeEval(filled.replace(/\[[^\]]*\]/g, ""))));
+  } catch {
+    return filled;
+  }
 }
 
 /** DC of a save step: a fixed number or one of DC_SOURCES; null if it can't be determined. */
@@ -195,7 +226,18 @@ export function describeStep(step, creatures, name = recipientLabel(step, creatu
         type: localize(MODIFIER_TYPES[step.modifierType] ?? step.modifierType),
         selector: localize(MODIFIER_SELECTORS[step.selector] ?? step.selector)
       });
-      return `${name}: ${value}${duration}`;
+      const against = step.against ? ` ${format(`HCD.Auto.Describe.against.${step.against}`, { name: againstName(step, creatures) })}` : "";
+      return `${name}: ${value}${against}${duration}`;
+    }
+    case "heal":
+      return `${name}: ${format("HCD.Auto.Describe.heal", { formula: step.formula })}`;
+    case "tempHP":
+      return `${name}: ${format("HCD.Auto.Describe.tempHP", { formula: step.formula })}${duration}`;
+    case "weakness":
+      return `${name}: ${format("HCD.Auto.Describe.weakness", { formula: step.formula, type: damageTypeLabel(step.damageType) })}${duration}`;
+    case "reduceCondition": {
+      const label = localize(CONFIG.PF2E?.conditionTypes?.[step.condition] ?? step.condition);
+      return `${name}: ${format("HCD.Auto.Describe.reduceCondition", { condition: label, value: step.value })}`;
     }
     case "effect":
       return `${name}: ${step.name}${duration}`;
@@ -218,6 +260,17 @@ export function describeStep(step, creatures, name = recipientLabel(step, creatu
   return "";
 }
 
+/** The creature a modifier's `against` refers to. */
+function againstCreature(step, creatures) {
+  return { self: creatures.self, notSelf: creatures.self, target: creatures.target, notTarget: creatures.target }[step.against] ?? null;
+}
+
+function againstName(step, creatures) {
+  const creature = againstCreature(step, creatures);
+  if (creature) return creatureName(creature);
+  return localize(`HCD.Auto.Recipient.${step.against.replace(/^not/, "").toLowerCase()}`);
+}
+
 function isValued(slug) {
   const condition = game.pf2e?.ConditionManager?.getCondition(slug);
   return typeof condition?._source.system.value.value === "number";
@@ -235,6 +288,7 @@ function isValued(slug) {
  */
 export async function applyPlan(plan, { card, info = {} }) {
   const creatures = resolveCreatures(info);
+  const vars = formulaVars(info, creatures);
   const records = [];
   const lines = [];
   const notes = [];
@@ -252,13 +306,15 @@ export async function applyPlan(plan, { card, info = {} }) {
         lines.push(format("HCD.Auto.Result.SaveRequested", { step: describeStep(step, creatures, name) }));
         continue;
       }
+      // Formulas of steps that didn't pass through buildPlan are filled in here
+      const ready = typeof step.formula === "string" ? { ...step, formula: resolveFormula(step.formula, vars) } : step;
       try {
         // An apply function returns false if the GM skipped the step
-        const applied = await APPLY[step.type](step, creature, { creatures, card, records, name });
-        if (applied !== false) lines.push(describeStep(step, creatures, name));
+        const applied = await APPLY[step.type](ready, creature, { creatures, card, records, name, info });
+        if (applied !== false) lines.push(describeStep(ready, creatures, name));
       } catch (err) {
         console.error(`${MODULE_ID} | Failed to apply`, step, err);
-        ui.notifications.error(format("HCD.Auto.ApplyFailed", { step: describeStep(step, creatures, name) }));
+        ui.notifications.error(format("HCD.Auto.ApplyFailed", { step: describeStep(ready, creatures, name) }));
       }
     }
   }
@@ -277,14 +333,56 @@ const APPLY = {
   },
 
   async modifier(step, creature, ctx) {
+    // The weapon of the triggering attack has its own selectors
+    const itemId = ctx.info.itemId;
+    const selector = {
+      "weapon-attack": itemId ? `${itemId}-attack` : "strike-attack-roll",
+      "weapon-damage": itemId ? `${itemId}-damage` : "strike-damage"
+    }[step.selector] ?? step.selector;
+    const predicate = [...(step.predicate ?? [])];
+    // "Against you": attacks aim at the creature (target:), defenses face its attacks (origin:)
+    const other = step.against ? againstCreature(step, ctx.creatures) : null;
+    if (other?.actor.signature) {
+      const prefix = DEFENSE_SELECTORS.has(step.selector) ? "origin" : "target";
+      const option = `${prefix}:signature:${other.actor.signature}`;
+      predicate.push(step.against.startsWith("not") ? { not: option } : option);
+    }
     const rule = {
       key: "FlatModifier",
-      selector: step.selector,
+      selector,
       type: step.modifierType,
       value: Number(step.value) || 0,
       label: ctx.card.title
     };
+    if (predicate.length) rule.predicate = predicate;
     await createEffect(creature, ctx, { name: ctx.card.title, rules: [rule], duration: step.duration });
+  },
+
+  async heal(step, { actor, token }, ctx) {
+    if (!token) throw new Error(`${actor.name} has no token to heal`);
+    const roll = await new Roll(step.formula).evaluate();
+    if (roll.dice.length) await roll.toMessage({ speaker: ChatMessage.getSpeaker({ actor, token }), flavor: ctx.card.title });
+    // Negative damage is healing; PF2e posts its own message with an undo button
+    await actor.applyDamage({ damage: -Math.max(roll.total, 0), token });
+  },
+
+  async tempHP(step, creature, ctx) {
+    const value = Math.max(Number(step.formula) || 0, 0);
+    await createEffect(creature, ctx, { name: ctx.card.title, rules: [{ key: "TempHP", value }], duration: step.duration });
+  },
+
+  async weakness(step, creature, ctx) {
+    const rule = { key: "Weakness", type: step.damageType, value: Math.max(Number(step.formula) || 1, 1) };
+    await createEffect(creature, ctx, { name: ctx.card.title, rules: [rule], duration: step.duration });
+  },
+
+  /** Lower a valued condition; returns false (not applied) if the creature doesn't have it. */
+  async reduceCondition(step, { actor }, ctx) {
+    const existing = actor.itemTypes.condition.find((c) => c.slug === step.condition && !c.isLocked);
+    const previous = existing?._source.system.value.value;
+    if (typeof previous !== "number") return false;
+    await game.pf2e.ConditionManager.updateConditionValue(existing.id, actor, Math.max(previous - (Number(step.value) || 1), 0));
+    ctx.records.push({ type: "reduced", actorUuid: actor.uuid, condition: step.condition, itemId: existing.id, previous });
   },
 
   async effect(step, creature, ctx) {
@@ -435,6 +533,16 @@ export async function undoRecords(records = []) {
     }
     const actor = fromUuidSync(record.actorUuid);
     const item = actor?.items.get(record.itemId);
+    if (record.type === "reduced" && actor) {
+      // Reducing to 0 removed the condition: add it again with its old value
+      if (item) await game.pf2e.ConditionManager.updateConditionValue(item.id, actor, record.previous);
+      else {
+        const source = game.pf2e.ConditionManager.getCondition(record.condition).toObject();
+        source.system.value.value = record.previous;
+        await actor.createEmbeddedDocuments("Item", [source]);
+      }
+      continue;
+    }
     if (!item) continue;
     if (record.type === "created") await item.delete();
     else if (record.type === "value") await game.pf2e.ConditionManager.updateConditionValue(item.id, actor, record.previous);

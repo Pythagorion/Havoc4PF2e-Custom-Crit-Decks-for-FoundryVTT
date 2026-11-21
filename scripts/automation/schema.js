@@ -2,6 +2,9 @@
  * Data model of card automation. A card's automation is a list of plain JSON steps,
  * e.g. { type: "condition", recipient: "target", condition: "frightened", value: 1 }.
  *
+ * A step with `enabled: false` is an alternative: shown unchecked in the review, so the GM
+ * can switch to it ("If the target has no shield, …").
+ *
  * Every step type lists its editable fields with a field kind. The review dialog builds
  * its edit form from these definitions, and a future card editor can reuse them as is:
  * a new step type only needs an entry here and an apply function in apply.js.
@@ -94,8 +97,36 @@ export const MODIFIER_SELECTORS = {
   reflex: "HCD.Auto.Selector.reflex",
   will: "HCD.Auto.Selector.will",
   "skill-check": "HCD.Auto.Selector.skill-check",
-  "all-speeds": "HCD.Auto.Selector.all-speeds"
+  "all-speeds": "HCD.Auto.Selector.all-speeds",
+  "land-speed": "HCD.Auto.Selector.land-speed",
+  "strike-attack-roll": "HCD.Auto.Selector.strike-attack-roll",
+  "strike-damage": "HCD.Auto.Selector.strike-damage",
+  "spell-attack-roll": "HCD.Auto.Selector.spell-attack-roll",
+  "spell-dc": "HCD.Auto.Selector.spell-dc",
+  intimidation: "HCD.Auto.Selector.intimidation",
+  // The weapon of the triggering attack (falls back to all Strikes)
+  "weapon-attack": "HCD.Auto.Selector.weapon-attack",
+  "weapon-damage": "HCD.Auto.Selector.weapon-damage"
 };
+
+/** Selectors of defenses: "against" a creature means against its attacks or effects. */
+export const DEFENSE_SELECTORS = new Set(["ac", "saving-throw", "fortitude", "reflex", "will"]);
+
+/** Limits a modifier to rolls against (or not against) one creature. */
+export const AGAINST = {
+  "": "HCD.Auto.Against.any",
+  self: "HCD.Auto.Against.self",
+  target: "HCD.Auto.Against.target",
+  notSelf: "HCD.Auto.Against.notSelf",
+  notTarget: "HCD.Auto.Against.notTarget"
+};
+
+/**
+ * Placeholders in formulas, filled in from the triggering roll:
+ * @level = level of the drawing creature, @rank = the spell's rank, @die = one weapon damage die.
+ * Formulas without dice are calculated right away, e.g. "floor(@rank / 2)".
+ */
+export const FORMULA_PLACEHOLDERS = ["@level", "@rank", "@die"];
 
 export const MODIFIER_TYPES = {
   circumstance: "HCD.Auto.ModifierType.circumstance",
@@ -129,9 +160,9 @@ export const OUTCOMES = ["criticalSuccess", "success", "failure", "criticalFailu
 export const OUTCOME_FALLBACK = { criticalSuccess: "success", criticalFailure: "failure" };
 
 /**
- * Field kinds: recipient, condition, duration, selector, modifierType, damageType, save, center,
- * affects, pick, moveMode (select fields), number, dc, distance (number inputs), text, formula
- * (text inputs), boolean (checkbox).
+ * Field kinds: recipient, condition, duration, selector, modifierType, against, damageType, save,
+ * center, affects, pick, moveMode, distance (select fields), number, dc (number inputs), text,
+ * formula (text inputs), boolean (checkbox).
  */
 export const STEP_TYPES = {
   condition: {
@@ -140,9 +171,12 @@ export const STEP_TYPES = {
     defaults: { recipient: "target", condition: "off-guard", value: 1, duration: "unlimited" }
   },
   modifier: {
+    // `predicate` (optional, not editable) narrows it further, e.g. ["item:ranged"]
     icon: "fa-solid fa-plus-minus",
-    fields: { recipient: "recipient", selector: "selector", modifierType: "modifierType", value: "number", duration: "duration" },
-    defaults: { recipient: "target", selector: "ac", modifierType: "circumstance", value: -1, duration: "unlimited" }
+    fields: {
+      recipient: "recipient", selector: "selector", modifierType: "modifierType", value: "number", against: "against", duration: "duration"
+    },
+    defaults: { recipient: "target", selector: "ac", modifierType: "circumstance", value: -1, against: "", duration: "unlimited" }
   },
   effect: {
     // A named effect on the token, optionally with PF2e rule elements (`rules`, not editable in the dialog)
@@ -159,6 +193,26 @@ export const STEP_TYPES = {
     icon: "fa-solid fa-droplet",
     fields: { recipient: "recipient", formula: "formula", damageType: "damageType" },
     defaults: { recipient: "target", formula: "1d4", damageType: "bleed" }
+  },
+  heal: {
+    icon: "fa-solid fa-heart-pulse",
+    fields: { recipient: "recipient", formula: "formula" },
+    defaults: { recipient: "self", formula: "@level" }
+  },
+  tempHP: {
+    icon: "fa-solid fa-shield-heart",
+    fields: { recipient: "recipient", formula: "formula", duration: "duration" },
+    defaults: { recipient: "self", formula: "@level", duration: "minute" }
+  },
+  weakness: {
+    icon: "fa-solid fa-heart-circle-exclamation",
+    fields: { recipient: "recipient", damageType: "damageType", formula: "formula", duration: "duration" },
+    defaults: { recipient: "target", damageType: WEAPON_DAMAGE, formula: "@rank", duration: "selfNextEnd" }
+  },
+  reduceCondition: {
+    icon: "fa-solid fa-arrow-down",
+    fields: { recipient: "recipient", condition: "condition", value: "number" },
+    defaults: { recipient: "target", condition: "frightened", value: 1 }
   },
   note: {
     // Not applied, shown to the GM as a reminder
