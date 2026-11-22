@@ -6,6 +6,7 @@ import {
   WEAPON_DAMAGE
 } from "./schema.js";
 import { askDamage, askForRolls } from "./table-rolls.js";
+import { linkCompendiumEntries } from "../compendium-links.js";
 import { findDestinations, gridlessMessage, moveLabel, noDestinationsMessage, pickDestination } from "./placement.js";
 
 const EFFECT_ICON = "systems/pf2e/icons/default-icons/effect.svg";
@@ -214,33 +215,15 @@ function recipientLabel(step, creatures) {
  */
 export function describeStep(step, creatures, name = recipientLabel(step, creatures)) {
   const duration = step.duration && step.duration !== "unlimited" ? ` (${localize(`HCD.Auto.Duration.${step.duration}`)})` : "";
+  const effect = describeEffect(step, creatures);
+  if (effect !== null) return `${name}: ${effect}${duration}`;
   switch (step.type) {
-    case "condition": {
-      const label = localize(CONFIG.PF2E?.conditionTypes?.[step.condition] ?? step.condition);
-      const value = isValued(step.condition) ? ` ${step.value}` : "";
-      return `${name}: ${label}${value}${duration}`;
-    }
-    case "modifier": {
-      const value = format("HCD.Auto.Describe.modifier", {
-        value: step.value > 0 ? `+${step.value}` : step.value,
-        type: localize(MODIFIER_TYPES[step.modifierType] ?? step.modifierType),
-        selector: localize(MODIFIER_SELECTORS[step.selector] ?? step.selector)
-      });
-      const against = step.against ? ` ${format(`HCD.Auto.Describe.against.${step.against}`, { name: againstName(step, creatures) })}` : "";
-      return `${name}: ${value}${against}${duration}`;
-    }
     case "heal":
       return `${name}: ${format("HCD.Auto.Describe.heal", { formula: step.formula })}`;
-    case "tempHP":
-      return `${name}: ${format("HCD.Auto.Describe.tempHP", { formula: step.formula })}${duration}`;
-    case "weakness":
-      return `${name}: ${format("HCD.Auto.Describe.weakness", { formula: step.formula, type: damageTypeLabel(step.damageType) })}${duration}`;
     case "reduceCondition": {
       const label = localize(CONFIG.PF2E?.conditionTypes?.[step.condition] ?? step.condition);
       return `${name}: ${format("HCD.Auto.Describe.reduceCondition", { condition: label, value: step.value })}`;
     }
-    case "effect":
-      return `${name}: ${step.name}${duration}`;
     case "damage":
       return `${name}: ${format("HCD.Auto.Describe.damage", { formula: step.formula, type: damageTypeLabel(step.damageType) })}`;
     case "persistent":
@@ -258,6 +241,49 @@ export function describeStep(step, creatures, name = recipientLabel(step, creatu
     }
   }
   return "";
+}
+
+/**
+ * What a step that creates an effect does, without recipient and duration, e.g. "Frightened 1"
+ * or "–1 circumstance to AC". Used for the review line and the effect name. Null for other steps.
+ */
+function describeEffect(step, creatures) {
+  switch (step.type) {
+    case "condition": {
+      const label = localize(CONFIG.PF2E?.conditionTypes?.[step.condition] ?? step.condition);
+      return isValued(step.condition) ? `${label} ${step.value}` : label;
+    }
+    case "modifier": {
+      const value = format("HCD.Auto.Describe.modifier", {
+        value: step.value > 0 ? `+${step.value}` : String(step.value).replace("-", "–"),
+        type: localize(MODIFIER_TYPES[step.modifierType] ?? step.modifierType),
+        selector: localize(MODIFIER_SELECTORS[step.selector] ?? step.selector)
+      });
+      const against = step.against ? ` ${format(`HCD.Auto.Describe.against.${step.against}`, { name: againstName(step, creatures) })}` : "";
+      return `${value}${against}`;
+    }
+    case "tempHP":
+      return format("HCD.Auto.Describe.tempHP", { formula: step.formula });
+    case "weakness":
+      return format("HCD.Auto.Describe.weakness", { formula: step.formula, type: damageTypeLabel(step.damageType) });
+    case "effect":
+      return step.name;
+  }
+  return null;
+}
+
+/**
+ * Name of an effect created by a card: "Can't Step (until the end of Valeros's next turn) [from: Overcommitted Lunge]".
+ * The duration names the creature whose turn counts; effects without an end leave it out.
+ */
+function effectName(label, duration, card, anchors) {
+  const anchor = DURATIONS[duration]?.anchor;
+  const creature = anchor ? anchors[anchor] : null;
+  if (!duration || duration === "unlimited") return format("HCD.Auto.EffectName.unlimited", { label, card: card.title });
+  const until = creature
+    ? format(`HCD.Auto.EffectName.Duration.${duration}`, { name: creatureName(creature) })
+    : localize(`HCD.Auto.Duration.${duration}`);
+  return format("HCD.Auto.EffectName.timed", { label, duration: until, card: card.title });
 }
 
 /** The creature a modifier's `against` refers to. */
@@ -312,6 +338,9 @@ export async function applyPlan(plan, { card, info = {} }) {
         // An apply function returns false if the GM skipped the step
         const applied = await APPLY[step.type](ready, creature, { creatures, card, records, name, info });
         if (applied !== false) lines.push(describeStep(ready, creatures, name));
+        // Effects without rules don't do anything by themselves: say so once
+        const reminder = localize("HCD.Auto.Notes.reminderEffect");
+        if (applied !== false && step.type === "effect" && !step.rules?.length && !notes.includes(reminder)) notes.push(reminder);
       } catch (err) {
         console.error(`${MODULE_ID} | Failed to apply`, step, err);
         ui.notifications.error(format("HCD.Auto.ApplyFailed", { step: describeStep(ready, creatures, name) }));
@@ -328,8 +357,7 @@ const APPLY = {
     const uuid = await getConditionUuid(step.condition);
     const rule = { key: "GrantItem", uuid, inMemoryOnly: true };
     if (isValued(step.condition)) rule.alterations = [{ mode: "override", property: "badge-value", value: Number(step.value) || 1 }];
-    const label = localize(CONFIG.PF2E.conditionTypes[step.condition] ?? step.condition);
-    await createEffect(creature, ctx, { name: `${ctx.card.title} (${label})`, rules: [rule], duration: step.duration });
+    await createEffect(creature, ctx, { label: describeEffect(step, ctx.creatures), rules: [rule], duration: step.duration });
   },
 
   async modifier(step, creature, ctx) {
@@ -355,7 +383,7 @@ const APPLY = {
       label: ctx.card.title
     };
     if (predicate.length) rule.predicate = predicate;
-    await createEffect(creature, ctx, { name: ctx.card.title, rules: [rule], duration: step.duration });
+    await createEffect(creature, ctx, { label: describeEffect(step, ctx.creatures), rules: [rule], duration: step.duration });
   },
 
   async heal(step, { actor, token }, ctx) {
@@ -368,12 +396,12 @@ const APPLY = {
 
   async tempHP(step, creature, ctx) {
     const value = Math.max(Number(step.formula) || 0, 0);
-    await createEffect(creature, ctx, { name: ctx.card.title, rules: [{ key: "TempHP", value }], duration: step.duration });
+    await createEffect(creature, ctx, { label: describeEffect(step, ctx.creatures), rules: [{ key: "TempHP", value }], duration: step.duration });
   },
 
   async weakness(step, creature, ctx) {
     const rule = { key: "Weakness", type: step.damageType, value: Math.max(Number(step.formula) || 1, 1) };
-    await createEffect(creature, ctx, { name: ctx.card.title, rules: [rule], duration: step.duration });
+    await createEffect(creature, ctx, { label: describeEffect(step, ctx.creatures), rules: [rule], duration: step.duration });
   },
 
   /** Lower a valued condition; returns false (not applied) if the creature doesn't have it. */
@@ -386,7 +414,7 @@ const APPLY = {
   },
 
   async effect(step, creature, ctx) {
-    await createEffect(creature, ctx, { name: step.name || ctx.card.title, rules: step.rules ?? [], duration: step.duration });
+    await createEffect(creature, ctx, { label: step.name || ctx.card.title, rules: step.rules ?? [], duration: step.duration });
   },
 
   async damage(step, { actor, token }, ctx) {
@@ -468,19 +496,26 @@ async function applyCondition(step, actor, records) {
   if (item) records.push({ type: "created", actorUuid: actor.uuid, itemId: item.id });
 }
 
-async function createEffect(recipient, { creatures, card, records }, { name, rules, duration }) {
+/**
+ * Create a card effect on the recipient.
+ * @param {object} options
+ * @param {string} options.label  What the effect does, e.g. "Can't Step"; also the start of its name.
+ */
+async function createEffect(recipient, { creatures, card, records }, { label, rules, duration }) {
   // "own" durations are counted on the recipient's turn
   const anchors = { ...creatures, recipient };
   const data = resolveDuration(duration, anchors);
   const anchor = data.anchor ? anchors[data.anchor] : null;
+  // Names are plain text, so the compendium links (e.g. to Step) go into the description
+  const [labelHTML, cardHTML] = await Promise.all([label, card.effect].map(async (text) => textToHTML(await linkCompendiumEntries(text))));
   const source = {
     type: "effect",
-    name,
+    name: effectName(label, duration, card, anchors),
     img: EFFECT_ICON,
     system: {
       rules,
       duration: { value: data.value, unit: data.unit, expiry: data.expiry, sustained: false },
-      description: { value: `<p><strong>${escapeHTML(card.title)}</strong></p><p>${textToHTML(card.effect)}</p>` },
+      description: { value: `<p><strong>${labelHTML}</strong></p><p><em>${escapeHTML(card.title)}:</em> ${cardHTML}</p>` },
       // PF2e counts turn-based durations on the turn of the effect's origin
       context: anchor ? {
         origin: { actor: anchor.actor.uuid, token: anchor.token?.uuid ?? null, item: null, spellcasting: null, rollOptions: [] },

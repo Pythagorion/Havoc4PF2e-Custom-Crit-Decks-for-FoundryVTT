@@ -563,7 +563,7 @@
 }
 
 /* ---------- Automation review (GM window) ---------- */
-.hcd-review .window-content {
+.hcd-review-wrap {
   display: flex;
   flex-direction: column;
   gap: 8px;

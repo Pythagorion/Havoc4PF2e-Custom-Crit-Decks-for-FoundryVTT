@@ -339,7 +339,28 @@
       },
       "Effects": {
         "noReactions": "Can't use reactions",
-        "noHealing": "Can't regain Hit Points"
+        "noHealing": "Can't regain Hit Points",
+        "stepAtTurnEnd": "Can Step at the end of its turn",
+        "halfDamageNext": "Next successful attack deals half damage",
+        "noStep": "Can't Step",
+        "extraPrecision": "Next ally's Strike deals +1d8 precision damage",
+        "provokesStrike": "Moving away allows a Strike as a reaction",
+        "movePain": "Takes 2 bludgeoning damage per move action",
+        "reachDifficult": "Spaces in the attacker's reach are difficult terrain",
+        "noShield": "Can't Raise a Shield or Shield Block",
+        "saveEcho": "Next save against its spells takes a –1 status penalty",
+        "burningSpace": "Ending a turn in this space deals fire damage",
+        "offGuardSpells": "Off-Guard against spell attack rolls",
+        "concealedFromAll": "All creatures are Concealed from it",
+        "halfHealing": "Healing is halved",
+        "halfStride": "First Stride only moves half its Speed",
+        "weaponStuck": "Weapon stuck – Interact to free it",
+        "noRaiseShield": "Can't Raise a Shield",
+        "snagged": "Attack snagged – Interact to pull free",
+        "weaponJammed": "Ranged weapon jammed – 2 Interact actions to fix",
+        "concealedFromAttacker": "Concealed from the attacker",
+        "glowing": "Sheds bright light, can't be Concealed, Hidden or Undetected",
+        "shakyHands": "Next manipulate spell needs a DC 5 flat check"
       },
       "Notes": {
         "nextStrikeOnly": "The bonus only applies to the next Strike against the target – remove the effect after it.",
@@ -356,7 +377,8 @@
         "heroPoint": "If the character has no Hero Points, it gains 1 Hero Point. Otherwise switch on the temporary Hit Points.",
         "focusPoint": "If the focus pool isn't full, the caster regains 1 Focus Point. Otherwise switch on the spell attack bonus.",
         "rangedOnly": "The bonus only applies against ranged attacks.",
-        "addStrength": "Add the creature's Strength modifier to the damage."
+        "addStrength": "Add the creature's Strength modifier to the damage.",
+        "reminderEffect": "Effects without rules (such as \"Can't Step\") are reminders on the token – enforce them by hand."
       },
       "Review": {
         "Title": "Apply Card Effects",
@@ -408,6 +430,19 @@
         "target": "against the target",
         "notSelf": "against everyone except the drawing creature",
         "notTarget": "against everyone except the target"
+      },
+      "EffectName": {
+        "timed": "{label} ({duration}) [from: {card}]",
+        "unlimited": "{label} [from: {card}]",
+        "Duration": {
+          "selfTurnEnd": "until the end of {name}'s turn",
+          "selfNextStart": "until the start of {name}'s next turn",
+          "selfNextEnd": "until the end of {name}'s next turn",
+          "targetNextStart": "until the start of {name}'s next turn",
+          "targetNextEnd": "until the end of {name}'s next turn",
+          "ownNextStart": "until the start of {name}'s next turn",
+          "ownNextEnd": "until the end of {name}'s next turn"
+        }
       }
     }
   }

@@ -339,7 +339,28 @@
       },
       "Effects": {
         "noReactions": "Kann keine Reaktionen nutzen",
-        "noHealing": "Kann keine Trefferpunkte zurückerhalten"
+        "noHealing": "Kann keine Trefferpunkte zurückerhalten",
+        "stepAtTurnEnd": "Darf am Ende ihres Zuges einen Schritt machen",
+        "halfDamageNext": "Nächster erfolgreicher Angriff verursacht halben Schaden",
+        "noStep": "Kann keinen Schritt machen",
+        "extraPrecision": "Nächster Schlag eines Verbündeten verursacht +1W8 Präzisionsschaden",
+        "provokesStrike": "Wegbewegen erlaubt einen Schlag als Reaktion",
+        "movePain": "Erleidet 2 Wuchtschaden pro Bewegungsaktion",
+        "reachDifficult": "Felder in Reichweite des Angreifers sind schwieriges Gelände",
+        "noShield": "Kann keinen Schild heben und nicht mit dem Schild blocken",
+        "saveEcho": "Nächster Rettungswurf gegen ihre Zauber erhält –1 Zustandsmalus",
+        "burningSpace": "Wer den Zug in diesem Feld beendet, erleidet Feuerschaden",
+        "offGuardSpells": "Unvorbereitet gegen Zauberangriffswürfe",
+        "concealedFromAll": "Alle Kreaturen sind für sie verborgen",
+        "halfHealing": "Heilung wird halbiert",
+        "halfStride": "Erste Fortbewegung nur mit halber Bewegungsrate",
+        "weaponStuck": "Waffe steckt fest – Interagieren, um sie zu befreien",
+        "noRaiseShield": "Kann keinen Schild heben",
+        "snagged": "Angriff hängt fest – Interagieren, um ihn zu lösen",
+        "weaponJammed": "Fernkampfwaffe blockiert – 2 Interagieren-Aktionen zum Beheben",
+        "concealedFromAttacker": "Für den Angreifer verborgen",
+        "glowing": "Leuchtet hell, kann nicht verborgen, versteckt oder unentdeckt sein",
+        "shakyHands": "Nächster Zauber mit Manipulieren braucht einen Pauschalen Wurf SG 5"
       },
       "Notes": {
         "nextStrikeOnly": "Der Bonus gilt nur für den nächsten Schlag gegen das Ziel – entferne den Effekt danach.",
@@ -356,7 +377,8 @@
         "heroPoint": "Hat der Charakter keine Heldenpunkte, erhält er 1 Heldenpunkt. Andernfalls schalte die temporären Trefferpunkte ein.",
         "focusPoint": "Ist der Fokuspool nicht voll, erhält der Zaubernde 1 Fokuspunkt zurück. Andernfalls schalte den Zauberangriffsbonus ein.",
         "rangedOnly": "Der Bonus gilt nur gegen Fernkampfangriffe.",
-        "addStrength": "Addiere den Stärkemodifikator der Kreatur zum Schaden."
+        "addStrength": "Addiere den Stärkemodifikator der Kreatur zum Schaden.",
+        "reminderEffect": "Effekte ohne Regeln (z. B. „Kann keinen Schritt machen“) sind Erinnerungen am Spielstein – setze sie von Hand durch."
       },
       "Review": {
         "Title": "Karteneffekte anwenden",
@@ -408,6 +430,19 @@
         "target": "gegen das Ziel",
         "notSelf": "gegen alle außer der ziehenden Kreatur",
         "notTarget": "gegen alle außer dem Ziel"
+      },
+      "EffectName": {
+        "timed": "{label} ({duration}) [aus: {card}]",
+        "unlimited": "{label} [aus: {card}]",
+        "Duration": {
+          "selfTurnEnd": "bis zum Ende des Zuges von {name}",
+          "selfNextStart": "bis zum Beginn des nächsten Zuges von {name}",
+          "selfNextEnd": "bis zum Ende des nächsten Zuges von {name}",
+          "targetNextStart": "bis zum Beginn des nächsten Zuges von {name}",
+          "targetNextEnd": "bis zum Ende des nächsten Zuges von {name}",
+          "ownNextStart": "bis zum Beginn des nächsten Zuges von {name}",
+          "ownNextEnd": "bis zum Ende des nächsten Zuges von {name}"
+        }
       }
     }
   }

@@ -214,9 +214,9 @@ export const DEFAULT_AUTOMATION = {
   /* ---------- Critical Hit – general ---------- */
 
   // Cautious Movements
-  hcdHitGeneral004: [{ type: "effect", recipient: "self", duration: "selfTurnEnd" }, MANUAL],
+  hcdHitGeneral004: [{ type: "effect", name: "HCD.Auto.Effects.stepAtTurnEnd", recipient: "self", duration: "selfTurnEnd" }, MANUAL],
   // In a Rage
-  hcdHitGeneral005: [{ type: "effect", recipient: "target" }, MANUAL],
+  hcdHitGeneral005: [{ type: "effect", name: "HCD.Auto.Effects.halfDamageNext", recipient: "target" }, MANUAL],
   // Lost in Thought: the Sustain branch is the alternative
   hcdHitGeneral010: [
     { type: "condition", recipient: "target", condition: "stupefied", value: 1, duration: "targetNextEnd" },
@@ -231,9 +231,9 @@ export const DEFAULT_AUTOMATION = {
     against: "notSelf", duration: "targetNextEnd"
   }],
   // No Way Out
-  hcdHitGeneral013: [{ type: "effect", recipient: "target", duration: "targetNextEnd" }],
+  hcdHitGeneral013: [{ type: "effect", name: "HCD.Auto.Effects.noStep", recipient: "target", duration: "targetNextEnd" }],
   // Like the Nibelung Saga
-  hcdHitGeneral014: [{ type: "effect", recipient: "target", duration: "selfNextEnd" }, MANUAL],
+  hcdHitGeneral014: [{ type: "effect", name: "HCD.Auto.Effects.extraPrecision", recipient: "target", duration: "selfNextEnd" }, MANUAL],
   // Momentum of Adrenaline
   hcdHitGeneral015: [{ type: "heal", recipient: "self", formula: "@level" }],
   // Solid as a Rock
@@ -303,7 +303,7 @@ export const DEFAULT_AUTOMATION = {
   // Shield Breaker
   hcdHitMelee00004: [{ type: "condition", recipient: "target", condition: "off-guard", duration: "selfNextStart" }, MANUAL],
   // Lingering Threat
-  hcdHitMelee00006: [{ type: "effect", recipient: "target", duration: "selfNextStart" }, MANUAL],
+  hcdHitMelee00006: [{ type: "effect", name: "HCD.Auto.Effects.provokesStrike", recipient: "target", duration: "selfNextStart" }, MANUAL],
   // Brow Cut
   hcdHitSlashing03: [
     { type: "persistent", recipient: "target", formula: "1", damageType: "bleed" },
@@ -315,13 +315,13 @@ export const DEFAULT_AUTOMATION = {
   // Rattled Senses
   hcdHitBludgeon04: [{ type: "condition", recipient: "target", condition: "stupefied", value: 1, duration: "targetNextEnd" }],
   // Cracked Ribs
-  hcdHitBludgeon05: [{ type: "effect", recipient: "target", duration: "targetNextEnd" }, MANUAL],
+  hcdHitBludgeon05: [{ type: "effect", name: "HCD.Auto.Effects.movePain", recipient: "target", duration: "targetNextEnd" }, MANUAL],
   // Vital Spot
   hcdHitPiercing03: [{ type: "damage", recipient: "target", formula: "1d6[precision]", damageType: "weapon" }],
   // Lodged Projectile
   hcdHitPiercing04: [{ type: "condition", recipient: "target", condition: "clumsy", value: 1 }, MANUAL],
   // Keep at Bay
-  hcdHitPiercing05: [{ type: "effect", recipient: "target", duration: "selfNextStart" }, MANUAL],
+  hcdHitPiercing05: [{ type: "effect", name: "HCD.Auto.Effects.reachDifficult", recipient: "target", duration: "selfNextStart" }, MANUAL],
   // Gap in the Armour
   hcdHitPiercing06: [{ type: "modifier", recipient: "target", selector: "ac", modifierType: "circumstance", value: -1, duration: "selfNextEnd" }],
   // Riposte Stance
@@ -338,7 +338,7 @@ export const DEFAULT_AUTOMATION = {
     BLEED_LINKED
   ],
   // Numbed Arm
-  hcdHitBludgeon03: [{ type: "effect", recipient: "target", duration: "targetNextEnd" }],
+  hcdHitBludgeon03: [{ type: "effect", name: "HCD.Auto.Effects.noShield", recipient: "target", duration: "targetNextEnd" }],
   // Pierced Grip
   hcdHitPiercing02: [{ type: "modifier", recipient: "target", selector: "attack-roll", modifierType: "circumstance", value: -1, duration: "targetNextEnd" }],
   // Pinned Down
@@ -390,9 +390,9 @@ export const DEFAULT_AUTOMATION = {
   // Lingering Energy
   hcdHitSpell00002: [{ type: "persistent", recipient: "target", formula: "@rank", damageType: "weapon" }],
   // Resonant Echo
-  hcdHitSpell00003: [{ type: "effect", recipient: "self", duration: "selfNextEnd" }, MANUAL],
+  hcdHitSpell00003: [{ type: "effect", name: "HCD.Auto.Effects.saveEcho", recipient: "self", duration: "selfNextEnd" }, MANUAL],
   // Scorched Ground
-  hcdHitSpell00004: [{ type: "effect", recipient: "target", duration: "selfNextEnd" }, MANUAL],
+  hcdHitSpell00004: [{ type: "effect", name: "HCD.Auto.Effects.burningSpace", recipient: "target", duration: "selfNextEnd" }, MANUAL],
   // Frozen Joints
   hcdHitSpell00005: [{ type: "condition", recipient: "target", condition: "clumsy", value: 1, duration: "targetNextEnd" }],
   // Chain Arc
@@ -425,7 +425,7 @@ export const DEFAULT_AUTOMATION = {
     { type: "modifier", recipient: "target", selector: "all-speeds", modifierType: "status", value: -5, duration: "targetNextEnd", enabled: false }
   ],
   // Arcane Mark
-  hcdHitSpell00020: [{ type: "effect", recipient: "target", duration: "selfNextEnd" }, MANUAL],
+  hcdHitSpell00020: [{ type: "effect", name: "HCD.Auto.Effects.offGuardSpells", recipient: "target", duration: "selfNextEnd" }, MANUAL],
   // Effortless Flow
   hcdHitSpell00021: [MANUAL],
   // Siphoned Power
@@ -439,7 +439,7 @@ export const DEFAULT_AUTOMATION = {
   // Catching Fire
   hcdHitSpell00024: [{ type: "persistent", recipient: "target", formula: "1d6", damageType: "fire" }],
   // Heat Haze
-  hcdHitSpell00025: [{ type: "effect", recipient: "target", duration: "selfNextStart" }, MANUAL],
+  hcdHitSpell00025: [{ type: "effect", name: "HCD.Auto.Effects.concealedFromAll", recipient: "target", duration: "selfNextStart" }, MANUAL],
 
   /* ---------- Critical Fumble – general ---------- */
 
@@ -466,7 +466,7 @@ export const DEFAULT_AUTOMATION = {
   // A Misguided Move
   hcdFumGeneral008: [MANUAL],
   // I've picked Poison
-  hcdFumGeneral009: [{ type: "effect", recipient: "self" }, MANUAL],
+  hcdFumGeneral009: [{ type: "effect", name: "HCD.Auto.Effects.halfHealing", recipient: "self" }, MANUAL],
   // Leveraged
   hcdFumGeneral010: [{ type: "condition", recipient: "self", condition: "fatigued" }],
   // Telegraphed
@@ -511,7 +511,7 @@ export const DEFAULT_AUTOMATION = {
     against: "notTarget", duration: "selfNextEnd"
   }],
   // Tangled Feet
-  hcdFumGeneral031: [{ type: "effect", recipient: "self", duration: "selfNextEnd" }, MANUAL],
+  hcdFumGeneral031: [{ type: "effect", name: "HCD.Auto.Effects.halfStride", recipient: "self", duration: "selfNextEnd" }, MANUAL],
   // Churned Ground
   hcdFumGeneral032: [MANUAL],
   // Blocked Path
@@ -520,7 +520,7 @@ export const DEFAULT_AUTOMATION = {
   /* ---------- Critical Fumble – specific ---------- */
 
   // Stuck Fast
-  hcdFumMelee00001: [{ type: "effect", recipient: "self" }, MANUAL],
+  hcdFumMelee00001: [{ type: "effect", name: "HCD.Auto.Effects.weaponStuck", recipient: "self" }, MANUAL],
   // Slippery Weapon Handle
   hcdFumMelee00003: [MANUAL],
   // Epic Bad Luck
@@ -528,11 +528,11 @@ export const DEFAULT_AUTOMATION = {
   // Material Stress
   hcdFumMelee00005: [MANUAL],
   // A jammed Parade
-  hcdFumMelee00007: [{ type: "effect", recipient: "self" }, MANUAL],
+  hcdFumMelee00007: [{ type: "effect", name: "HCD.Auto.Effects.weaponStuck", recipient: "self" }, MANUAL],
   // Lost Grip
   hcdFumMelee00009: [MANUAL],
   // Shield Slip
-  hcdFumMelee00010: [{ type: "effect", recipient: "self", duration: "selfNextStart" }, MANUAL],
+  hcdFumMelee00010: [{ type: "effect", name: "HCD.Auto.Effects.noRaiseShield", recipient: "self", duration: "selfNextStart" }, MANUAL],
   // Caught Blade
   hcdFumMelee00011: [MANUAL],
   // Wild Swing
@@ -548,7 +548,7 @@ export const DEFAULT_AUTOMATION = {
   // Self-Inflicted Nick
   hcdFumSlashing03: [{ type: "persistent", recipient: "self", formula: "1d4", damageType: "bleed" }],
   // Snagged
-  hcdFumSlashing04: [{ type: "effect", recipient: "self" }, MANUAL],
+  hcdFumSlashing04: [{ type: "effect", name: "HCD.Auto.Effects.snagged", recipient: "self" }, MANUAL],
   // Jarring Impact
   hcdFumBludgeon01: [{ type: "condition", recipient: "self", condition: "enfeebled", value: 1, duration: "selfNextEnd" }],
   // Ringing Clang
@@ -568,7 +568,7 @@ export const DEFAULT_AUTOMATION = {
   // Fumbled Ammunition
   hcdFumRanged0001: [MANUAL],
   // Loading Jam
-  hcdFumRanged0002: [{ type: "effect", recipient: "self" }, MANUAL],
+  hcdFumRanged0002: [{ type: "effect", name: "HCD.Auto.Effects.weaponJammed", recipient: "self" }, MANUAL],
   // Scattered ammunition
   hcdFumRanged0003: [MANUAL],
   // Deviated Trajectory
@@ -583,7 +583,7 @@ export const DEFAULT_AUTOMATION = {
     outcomes: { failure: [{ type: "damage", recipient: "saver", formula: "@die", damageType: "weapon" }] }
   }],
   // Lost Sight
-  hcdFumRanged0006: [{ type: "effect", recipient: "target", duration: "selfNextStart" }, MANUAL],
+  hcdFumRanged0006: [{ type: "effect", name: "HCD.Auto.Effects.concealedFromAttacker", recipient: "target", duration: "selfNextStart" }, MANUAL],
   // String Slap
   hcdFumRanged0007: [
     { type: "damage", recipient: "self", formula: "1", damageType: "bludgeoning" },
@@ -626,7 +626,7 @@ export const DEFAULT_AUTOMATION = {
   // Overcommitted Lunge
   hcdFumUnarmed006: [
     { type: "condition", recipient: "self", condition: "off-guard", duration: "selfNextStart" },
-    { type: "effect", recipient: "self", duration: "selfNextEnd" }
+    { type: "effect", name: "HCD.Auto.Effects.noStep", recipient: "self", duration: "selfNextEnd" }
   ],
   // Hollow Thud
   hcdFumUnarmed008: [{
@@ -645,9 +645,9 @@ export const DEFAULT_AUTOMATION = {
   // Magical Confusion
   hcdFumSpell00004: [{ type: "condition", recipient: "self", condition: "confused", duration: "selfNextStart" }],
   // Glowing Residue
-  hcdFumSpell00005: [{ type: "effect", recipient: "self", duration: "selfNextEnd" }, MANUAL],
+  hcdFumSpell00005: [{ type: "effect", name: "HCD.Auto.Effects.glowing", recipient: "self", duration: "selfNextEnd" }, MANUAL],
   // Shaky Hands
-  hcdFumSpell00006: [{ type: "effect", recipient: "self", duration: "selfNextEnd" }, MANUAL],
+  hcdFumSpell00006: [{ type: "effect", name: "HCD.Auto.Effects.shakyHands", recipient: "self", duration: "selfNextEnd" }, MANUAL],
   // Feedback Loop
   hcdFumSpell00007: [{ type: "persistent", recipient: "self", formula: "@rank", damageType: "weapon" }],
   // Scorched Fingers
