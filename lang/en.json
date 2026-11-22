@@ -199,7 +199,13 @@
       "Actor": "Creature",
       "NoActor": "— none —",
       "Chooser": "Card Is Picked By",
-      "ChooserGM": "GM (me)"
+      "ChooserGM": "GM (me)",
+      "GeneralCards": "General Cards",
+      "General": {
+        "include": "Include",
+        "exclude": "Exclude"
+      },
+      "NoCards": "No enabled card fits these options."
     },
     "PlayerDraw": {
       "Title": "{actor} draws from the {deck}!",

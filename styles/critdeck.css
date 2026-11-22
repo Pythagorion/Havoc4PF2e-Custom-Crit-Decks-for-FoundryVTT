@@ -718,3 +718,6 @@
   align-items: center;
   font-weight: normal;
 }
+
+/* ---------- Manual draw dialog ---------- */
+.hcd-manual-draw .form-group[hidden] { display: none; }

@@ -31,7 +31,10 @@ export function beginDraw(trigger) {
  * @param {object} trigger
  * @param {string} [trigger.chooserId]  User who picks the card; found from `info` if omitted.
  */
-export async function startPlayerDraw({ deck, rollKind = "attack", attackType = null, damageTypes = [], info = {}, promptMessageId = null, chooserId = null }) {
+export async function startPlayerDraw({
+  deck, rollKind = "attack", attackType = null, damageTypes = [], excludeGeneral = false, matchDamage = false,
+  info = {}, promptMessageId = null, chooserId = null
+}) {
   if (!game.user.isGM) return ui.notifications.warn(localize("HCD.Warn.GMOnly"));
   const session = {
     id: foundry.utils.randomID(),
@@ -39,7 +42,8 @@ export async function startPlayerDraw({ deck, rollKind = "attack", attackType = 
     rollKind,
     attackType,
     damageTypes,
-    filter: { attackType, damageTypes },
+    matchDamage,
+    filter: { attackType, damageTypes, excludeGeneral, matchDamage },
     info,
     promptMessageId,
     chooserId: game.users.get(chooserId)?.id ?? findChooser(info),
@@ -141,6 +145,7 @@ function publicState(session) {
     rollKind: session.rollKind,
     attackType: session.attackType,
     damageTypes: session.damageTypes,
+    matchDamage: session.matchDamage,
     info: session.info,
     chooserId: session.chooserId,
     phase: session.phase,

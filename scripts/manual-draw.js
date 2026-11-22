@@ -1,5 +1,5 @@
 import { ATTACK_TYPES, DECKS, GENERAL_ONLY, TEMPLATES } from "./constants.js";
-import { getDamageTypeChoices } from "./deck.js";
+import { damageTypeLabel, getCardDamageTypes, getPool } from "./deck.js";
 import { getSetting, localize, setSetting } from "./utils.js";
 import { beginDraw } from "./player-draw.js";
 
@@ -10,11 +10,36 @@ import { beginDraw } from "./player-draw.js";
  */
 
 const GM_CHOOSER = "gm";
+const GENERAL_CHOICES = { include: "HCD.Manual.General.include", exclude: "HCD.Manual.General.exclude" };
+
+/** "Any" plus the damage types of the cards that fit the deck and attack type, by name. */
+function damageChoicesFor(deck, attackType) {
+  const types = getCardDamageTypes(deck, attackType)
+    .map((type) => [type, damageTypeLabel(type)])
+    .sort((a, b) => a[1].localeCompare(b[1]));
+  return { "": localize("HCD.DamageType.any"), ...Object.fromEntries(types) };
+}
+
+/**
+ * Keep the dialog in line with the chosen deck and attack type: "General cards" only matters
+ * unless general cards are drawn anyway, and the damage types offered are those of the fitting cards
+ * (hidden if no card fits a damage type).
+ */
+function updateDialog(form) {
+  const deck = form.elements.deck.value;
+  const attackType = form.elements.attackType.value;
+  form.querySelector("[data-row=generalCards]").hidden = attackType === GENERAL_ONLY;
+  const select = form.elements.damageType;
+  const choices = damageChoicesFor(deck, attackType);
+  const selected = select.value in choices ? select.value : "";
+  select.replaceChildren(...Object.entries(choices).map(([value, label]) => new Option(label, value, false, value === selected)));
+  form.querySelector("[data-row=damageType]").hidden = Object.keys(choices).length < 2;
+}
 
 /**
  * Ask the GM which deck to draw from (and for whom), then start the draw.
  * The dialog starts with the options the GM picked last time; a selected token takes precedence for the actor.
- * @param {object} [defaults]  Preselected values: { deck, attackType, damageType, actorUuid, chooserId }
+ * @param {object} [defaults]  Preselected values: { deck, attackType, generalCards, damageType, actorUuid, chooserId }
  */
 export async function openManualDraw(defaults = {}) {
   if (!game.user.isGM) return ui.notifications.warn(localize("HCD.Warn.GMOnly"));
@@ -25,22 +50,26 @@ export async function openManualDraw(defaults = {}) {
   let actorUuid = defaults.actorUuid ?? selectedActor?.uuid ?? last.actorUuid ?? "";
   if (!(actorUuid in actors)) actorUuid = "";
   const playerDraw = getSetting("playerDraw");
-  const useDamageTypes = getSetting("useDamageTypes");
 
   const deckChoices = Object.fromEntries(Object.entries(DECKS).map(([key, deck]) => [key, deck.label]));
   const attackChoices = { "": "HCD.AttackType.any", [GENERAL_ONLY]: "HCD.AttackType.none", ...ATTACK_TYPES };
-  const damageChoices = { "": "HCD.DamageType.any", ...getDamageTypeChoices() };
   const chooserChoices = getChooserChoices();
   // The last chooser only fits if the actor is still the same one
   const lastChooser = actorUuid === (last.actorUuid ?? "") ? last.chooserId : undefined;
   const pick = (value, choices, fallback) => (value != null && value in choices ? value : fallback);
+  const deck = pick(defaults.deck ?? last.deck, deckChoices, "hit");
+  const attackType = pick(defaults.attackType ?? last.attackType, attackChoices, "");
+  // All damage types for now; the dialog narrows them down to the fitting ones when it opens
+  const damageChoices = { "": localize("HCD.DamageType.any"), ...Object.fromEntries(
+    getCardDamageTypes(deck, "").map((type) => [type, damageTypeLabel(type)])) };
 
   const content = await foundry.applications.handlebars.renderTemplate(TEMPLATES.manualDraw, {
     deckChoices,
-    deck: pick(defaults.deck ?? last.deck, deckChoices, "hit"),
+    deck,
     attackChoices,
-    attackType: pick(defaults.attackType ?? last.attackType, attackChoices, ""),
-    useDamageTypes,
+    attackType,
+    generalChoices: GENERAL_CHOICES,
+    generalCards: pick(defaults.generalCards ?? last.generalCards, GENERAL_CHOICES, "include"),
     damageChoices,
     damageType: pick(defaults.damageType ?? last.damageType, damageChoices, ""),
     actorChoices: { "": localize("HCD.Manual.NoActor"), ...actors },
@@ -64,11 +93,33 @@ export async function openManualDraw(defaults = {}) {
       },
       { action: "cancel", label: "HCD.PlayerDraw.Cancel", icon: "fa-solid fa-xmark" }
     ],
+    render: (event, dialog) => {
+      const form = dialog.element.querySelector("form") ?? dialog.element;
+      updateDialog(form);
+      form.addEventListener("change", (e) => {
+        if (["deck", "attackType"].includes(e.target.name)) updateDialog(form);
+      });
+    },
     rejectClose: false
   });
   if (!data || typeof data !== "object") return;
   // Fields hidden by the current settings keep their previously saved value
   await setSetting("manualDrawOptions", { ...last, ...data });
+
+  const drawDeck = data.deck in DECKS ? data.deck : "hit";
+  const filter = {
+    attackType: data.attackType || null,
+    // "General cards only" ignores the general cards option
+    excludeGeneral: data.attackType !== GENERAL_ONLY && data.generalCards === "exclude",
+    damageTypes: [],
+    matchDamage: false
+  };
+  // A damage type only counts if the deck has fitting cards with it (the row was shown)
+  if (data.damageType && getCardDamageTypes(drawDeck, data.attackType ?? "").includes(data.damageType)) {
+    filter.damageTypes = [data.damageType];
+    filter.matchDamage = true;
+  }
+  if (!getPool(drawDeck, filter).length) return ui.notifications.warn(localize("HCD.Manual.NoCards"));
 
   const actor = data.actorUuid ? fromUuidSync(data.actorUuid) : null;
   // Without a roll, the card automation uses the selected token and the GM's current target
@@ -76,10 +127,9 @@ export async function openManualDraw(defaults = {}) {
   const target = game.user.targets.first()?.document ?? null;
   const chooserId = data.chooserId === GM_CHOOSER || !data.chooserId ? game.user.id : data.chooserId;
   return beginDraw({
-    deck: data.deck in DECKS ? data.deck : "hit",
+    deck: drawDeck,
     rollKind: "manual",
-    attackType: data.attackType || null,
-    damageTypes: useDamageTypes && data.damageType ? [data.damageType] : [],
+    ...filter,
     chooserId,
     info: {
       actorName: actor?.name ?? "",

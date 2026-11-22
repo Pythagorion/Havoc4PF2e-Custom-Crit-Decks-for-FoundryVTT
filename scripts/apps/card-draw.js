@@ -15,15 +15,22 @@ const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
  * @param {string} [options.rollKind]          attack | save | skill | other
  * @param {string|null} [options.attackType]   null = any, "none" = general cards only
  * @param {string[]} [options.damageTypes]
+ * @param {boolean} [options.excludeGeneral]   Only specific cards (manual draw option).
+ * @param {boolean} [options.matchDamage]      Match damage types even if the world setting is off.
  * @param {object} [options.info]              Source roll info (actorName, itemName, natural).
  * @param {string} [options.promptMessageId]   GM prompt chat message to resolve afterwards.
  */
-export function openDrawApp({ deck, rollKind = "attack", attackType = null, damageTypes = [], info = {}, promptMessageId = null }) {
+export function openDrawApp({
+  deck, rollKind = "attack", attackType = null, damageTypes = [], excludeGeneral = false, matchDamage = false,
+  info = {}, promptMessageId = null
+}) {
   if (!game.user.isGM) return ui.notifications.warn(localize("HCD.Warn.GMOnly"));
   const id = `${MODULE_ID}-draw-${promptMessageId ?? foundry.utils.randomID()}`;
   const existing = foundry.applications.instances.get(id);
   if (existing) return existing.bringToFront();
-  return new CardDrawApp({ id, deck, rollKind, attackType, damageTypes, info, promptMessageId }).render({ force: true });
+  return new CardDrawApp({
+    id, deck, rollKind, attackType, damageTypes, excludeGeneral, matchDamage, info, promptMessageId
+  }).render({ force: true });
 }
 
 /** GM-only window: shows a drawn card and lets the GM decline, redraw, pick or reveal it. */
@@ -57,6 +64,8 @@ export class CardDrawApp extends HandlebarsApplicationMixin(ApplicationV2) {
     this.rollKind = options.rollKind ?? "attack";
     this.attackType = options.attackType ?? null;
     this.damageTypes = options.damageTypes ?? [];
+    this.excludeGeneral = !!options.excludeGeneral;
+    this.matchDamage = !!options.matchDamage;
     this.info = options.info ?? {};
     this.promptMessageId = options.promptMessageId ?? null;
   }
@@ -67,7 +76,12 @@ export class CardDrawApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
   /** @returns {import("../deck.js").DrawFilter} */
   get filter() {
-    return { attackType: this.attackType, damageTypes: this.damageTypes };
+    return {
+      attackType: this.attackType,
+      damageTypes: this.damageTypes,
+      excludeGeneral: this.excludeGeneral,
+      matchDamage: this.matchDamage
+    };
   }
 
   async _prepareContext(options) {
@@ -81,7 +95,8 @@ export class CardDrawApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const animate = this.#animate;
     this.#animate = false; // only animate renders caused by a new card
 
-    const useDamageTypes = getSetting("useDamageTypes");
+    // A damage type picked in the manual draw keeps its select, even if damage types are off
+    const useDamageTypes = getSetting("useDamageTypes") || this.matchDamage;
     return Object.assign(context, {
       deck: this.deck,
       sourceLine: this.#sourceLine(),

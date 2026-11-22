@@ -15,14 +15,19 @@
     </select>
   </div>
 
-  {{#if useDamageTypes}}
-  <div class="form-group">
-    <label>{{localize "HCD.Draw.DamageType"}}</label>
-    <select name="damageType">
-      {{selectOptions damageChoices selected=damageType localize=true}}
+  <div class="form-group" data-row="generalCards">
+    <label>{{localize "HCD.Manual.GeneralCards"}}</label>
+    <select name="generalCards">
+      {{selectOptions generalChoices selected=generalCards localize=true}}
     </select>
   </div>
-  {{/if}}
+
+  <div class="form-group" data-row="damageType">
+    <label>{{localize "HCD.Draw.DamageType"}}</label>
+    <select name="damageType">
+      {{selectOptions damageChoices selected=damageType}}
+    </select>
+  </div>
 
   <div class="form-group">
     <label>{{localize "HCD.Manual.Actor"}}</label>

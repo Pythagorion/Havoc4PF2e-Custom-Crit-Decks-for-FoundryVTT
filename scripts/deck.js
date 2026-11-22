@@ -22,6 +22,8 @@ import { normalizeSteps } from "./automation/schema.js";
  * @typedef {object} DrawFilter
  * @property {string|null} [attackType]   Attack type of the roll; null = any, "none" = general cards only.
  * @property {string[]} [damageTypes]     Damage types of the roll; empty = any.
+ * @property {boolean} [excludeGeneral]   Only specific cards (ignored for "general cards only").
+ * @property {boolean} [matchDamage]      Match damage types even if the world setting is off (GM picked one).
  */
 
 /** Bring arbitrary (form/imported) data into a valid card shape. */
@@ -59,13 +61,23 @@ export function damageTypeLabel(type) {
 }
 
 /** Whether a card may be drawn for a roll matching the filter. */
-export function cardMatches(card, { attackType = null, damageTypes = [] } = {}) {
-  if (card.type === "general") return true;
+export function cardMatches(card, { attackType = null, damageTypes = [], excludeGeneral = false, matchDamage = false } = {}) {
+  if (card.type === "general") return attackType === GENERAL_ONLY || !excludeGeneral;
   if (attackType === GENERAL_ONLY) return false;
   if (attackType && card.attackType && card.attackType !== attackType) return false;
-  if (getSetting("useDamageTypes") && card.damageType && damageTypes.length
+  if ((matchDamage || getSetting("useDamageTypes")) && card.damageType && damageTypes.length
     && !damageTypes.includes(card.damageType)) return false;
   return true;
+}
+
+/** Damage types of the enabled specific cards that fit a deck and attack type ("" = any). */
+export function getCardDamageTypes(deck, attackType = "") {
+  if (attackType === GENERAL_ONLY) return [];
+  const types = getCards()
+    .filter((c) => c.enabled && c.deck === deck && c.type === "specific" && c.damageType)
+    .filter((c) => !attackType || !c.attackType || c.attackType === attackType)
+    .map((c) => c.damageType);
+  return [...new Set(types)];
 }
 
 /** All enabled cards of a deck that may be drawn for the given filter. */
@@ -170,20 +182,25 @@ export async function reshuffle(deck = null) {
  * Short description of what triggered a draw, e.g. "Longsword · Melee · Slashing" or "Saving Throw".
  * @param {{rollKind?: string, attackType?: string, damageTypes?: string[], info?: object}} trigger
  */
-export function describeTrigger({ rollKind = "attack", attackType = null, damageTypes = [], info = {} }) {
+export function describeTrigger({ rollKind = "attack", attackType = null, damageTypes = [], matchDamage = false, info = {} }) {
   // Manual draws (no roll) are described like attacks, so a chosen attack/damage type shows up
   if (rollKind !== "attack" && rollKind !== "manual") return localize(ROLL_KIND_LABELS[rollKind] ?? ROLL_KIND_LABELS.other);
   const parts = [info.itemName || localize(ROLL_KIND_LABELS[rollKind])];
   if (attackType in ATTACK_TYPES) parts.push(localize(ATTACK_TYPES[attackType]));
-  if (getSetting("useDamageTypes") && damageTypes.length) parts.push(damageTypes.map(damageTypeLabel).join("/"));
+  if ((matchDamage || getSetting("useDamageTypes")) && damageTypes.length) parts.push(damageTypes.map(damageTypeLabel).join("/"));
   return parts.join(" · ");
 }
 
+/**
+ * Label of a card's type, e.g. "General", "Melee", "Melee · Slashing" or "Bludgeoning"
+ * (specific to a damage type, any attack). The damage type is part of the card, so it
+ * shows even when damage types aren't used for drawing.
+ */
 export function cardTypeLabel(card) {
   if (card.type === "general") return localize(CARD_TYPES.general);
   const parts = [];
   if (card.attackType) parts.push(localize(ATTACK_TYPES[card.attackType]));
-  if (card.damageType && getSetting("useDamageTypes")) parts.push(damageTypeLabel(card.damageType));
+  if (card.damageType) parts.push(damageTypeLabel(card.damageType));
   return parts.join(" · ") || localize(CARD_TYPES.specific);
 }
 
