@@ -601,6 +601,13 @@
 
 .hcd-review-list .hcd-note { font-style: italic; }
 
+.hcd-review-list li { flex-wrap: wrap; }
+.hcd-review-list .hcd-review-select { flex-basis: 100%; padding-left: calc(1.2em + 8px); }
+
+/* Keep the token selection of a switched-off area step readable */
+.hcd-review .hcd-review-list li.hcd-disabled { opacity: 1; text-decoration: none; }
+.hcd-review-list li.hcd-disabled > :not(.hcd-review-select) { opacity: 0.5; text-decoration: line-through; }
+
 .hcd-review .hcd-disabled {
   opacity: 0.5;
   text-decoration: line-through;
@@ -684,6 +691,25 @@
 
 .hcd-table-roll .form-footer button[data-action="foundry"] {
   flex-basis: 100%;
+}
+
+.hcd-review-select {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 4px 0 2px;
+}
+
+.hcd-review-select button {
+  align-self: flex-start;
+  font-size: var(--font-size-12, 12px);
+  line-height: 1.6;
+}
+
+.hcd-review-warning {
+  margin: 0;
+  font-size: var(--font-size-12, 12px);
+  color: var(--color-level-warning, #c9593f);
 }
 
 .hcd-review-candidates .checkbox {

@@ -389,7 +389,11 @@
         "Edit": "Edit",
         "Skip": "Don't Apply",
         "Affected": "Affected creatures",
-        "NoneFound": "No matching creatures on the scene."
+        "NoneFound": "No creatures found. If that's wrong, select the tokens on the canvas and use them here.",
+      "UseSelected": "Use selected tokens",
+      "Limit": "max. {count}",
+      "SelectFirst": "Select the affected tokens on the canvas first.",
+      "TooMany": "This card affects fewer creatures – select fewer tokens."
       },
       "Result": {
         "Title": "Applied: {title}",

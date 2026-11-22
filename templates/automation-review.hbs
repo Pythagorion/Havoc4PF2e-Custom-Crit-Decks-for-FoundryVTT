@@ -1,4 +1,12 @@
 <div class="hcd-review-wrap">
+{{#*inline "selectTokens"}}
+<div class="hcd-review-select">
+  {{#if noneFound}}<p class="hcd-review-warning"><i class="fa-solid fa-triangle-exclamation"></i> {{localize "HCD.Auto.Review.NoneFound"}}</p>{{/if}}
+  <button type="button" data-action="useSelected" data-path="{{path}}">
+    <i class="fa-solid fa-object-group"></i> {{localize "HCD.Auto.Review.UseSelected"}}{{#if limitHint}} ({{limitHint}}){{/if}}
+  </button>
+</div>
+{{/inline}}
 <div class="hcd-review-body">
   <h3 class="hcd-review-title">{{title}}</h3>
 
@@ -32,11 +40,10 @@
       <label>{{localize "HCD.Auto.Review.Affected"}}</label>
       {{#each candidates}}
       <label class="checkbox"><input type="checkbox" name="{{../path}}.chosen.{{index}}" {{checked checked}}> {{name}}</label>
-      {{else}}
-      <p class="hint">{{localize "HCD.Auto.Review.NoneFound"}}</p>
       {{/each}}
     </div>
     {{/if}}
+    {{#if isArea}}{{> selectTokens}}{{/if}}
   </fieldset>
   {{/each}}
 
@@ -47,6 +54,7 @@
     {{#if heading}}<li class="hcd-review-heading hcd-depth-{{depth}}">{{heading}}</li>{{/if}}
     <li class="hcd-depth-{{depth}}{{#unless enabled}} hcd-disabled{{/unless}}{{#if isNote}} hcd-note{{/if}}">
       <i class="{{icon}}"></i> <span>{{description}}</span>
+      {{#if isArea}}{{> selectTokens}}{{/if}}
     </li>
     {{/each}}
   </ul>

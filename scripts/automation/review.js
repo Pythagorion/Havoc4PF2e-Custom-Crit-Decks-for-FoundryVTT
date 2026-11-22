@@ -5,7 +5,7 @@ import {
   AFFECTS, AGAINST, AREA_DEFAULTS, AREA_FIELDS, CENTERS, DURATIONS, MODIFIER_SELECTORS, MODIFIER_TYPES, MOVE_MODES,
   OUTCOME_FALLBACK, OUTCOMES, PICKS, RECIPIENTS, SAVES, SPEED_DISTANCES, STEP_TYPES
 } from "./schema.js";
-import { describeStep, planArea, resolveCreatures } from "./apply.js";
+import { areaLimit, chooseSelectedTokens, describeStep, planArea, resolveCreatures } from "./apply.js";
 
 /** Editable fields of a step: those of its type, plus the area fields for area recipients. */
 function fieldsOf(step) {
@@ -29,7 +29,8 @@ export class AutomationReview extends HandlebarsApplicationMixin(ApplicationV2) 
     actions: {
       apply: AutomationReview.#onApply,
       edit: AutomationReview.#onEdit,
-      skip: AutomationReview.#onSkip
+      skip: AutomationReview.#onSkip,
+      useSelected: AutomationReview.#onUseSelected
     }
   };
 
@@ -81,7 +82,13 @@ export class AutomationReview extends HandlebarsApplicationMixin(ApplicationV2) 
         })),
         // Creatures found for an area step; the GM picks who is affected
         hasCandidates: Array.isArray(step.candidates),
-        candidates: step.candidates?.map((c, index) => ({ index, name: c.name, checked: step.chosen?.includes(c.uuid) }))
+        candidates: step.candidates?.map((c, index) => ({ index, name: c.name, checked: step.chosen?.includes(c.uuid) })),
+        // Area steps: the GM can use the tokens selected on the canvas instead
+        isArea: step.recipient === "area" && Array.isArray(step.candidates),
+        noneFound: step.recipient === "area" && !step.chosen?.length,
+        limitHint: Number.isFinite(areaLimit(step))
+          ? game.i18n.format("HCD.Auto.Review.Limit", { count: areaLimit(step) })
+          : ""
       })),
       hasSteps: this.plan.some((s) => s.enabled && s.type !== "note")
     });
@@ -189,7 +196,21 @@ export class AutomationReview extends HandlebarsApplicationMixin(ApplicationV2) 
 
   static #onApply() {
     this.#syncFromForm();
+    // Never affect more creatures than the card allows
+    const tooMany = this.#flatten(this.plan, "steps", 0).some(({ step }) =>
+      step.enabled && step.recipient === "area" && (step.chosen?.length ?? 0) > areaLimit(step));
+    if (tooMany) return ui.notifications.warn("HCD.Auto.Review.TooMany", { localize: true });
     this.#finish(this.plan);
+  }
+
+  /** Use the tokens selected on the canvas as the creatures of an area step. */
+  static #onUseSelected(event, target) {
+    this.#syncFromForm();
+    const step = this.#getStep(target.dataset.path);
+    if (!step) return;
+    const warning = chooseSelectedTokens(step);
+    if (warning) return ui.notifications.warn(warning, { localize: true });
+    this.render();
   }
 
   static #onEdit() {

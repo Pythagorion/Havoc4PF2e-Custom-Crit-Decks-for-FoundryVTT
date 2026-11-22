@@ -55,7 +55,7 @@ export function resolveRecipients(step, creatures) {
 /** Creatures on the canvas matching an area step, closest first. */
 export function findAreaCreatures(step, creatures) {
   const center = creatures[step.center]?.token?.object;
-  if (!canvas.ready || !center || center.scene !== canvas.scene) return [];
+  if (!canvas.ready || !center || center.document.parent !== canvas.scene) return [];
   const self = creatures.self?.actor ?? null;
   const target = creatures.target?.token ?? null;
   const found = [];
@@ -87,6 +87,30 @@ export function planArea(step, creatures) {
   const found = findAreaCreatures(step, creatures);
   step.candidates = found.map((c) => ({ uuid: c.token.uuid, name: creatureName(c) }));
   step.chosen = (step.pick === "one" ? found.slice(0, 1) : found).map((c) => c.token.uuid);
+}
+
+/** How many creatures an area step may affect at most. */
+export const areaLimit = (step) => (step.pick === "one" ? 1 : Infinity);
+
+/**
+ * Let the tokens the GM selected on the canvas be the creatures of an area step
+ * (when the automatic search found nobody, or the wrong creatures).
+ * @returns {string|null}  Localization key of a warning, or null if the selection was used.
+ */
+export function chooseSelectedTokens(step) {
+  const tokens = (canvas.tokens?.controlled ?? []).filter((t) => t.actor?.isOfType("creature"));
+  if (!tokens.length) return "HCD.Auto.Review.SelectFirst";
+  if (tokens.length > areaLimit(step)) return "HCD.Auto.Review.TooMany";
+  const candidates = step.candidates ?? [];
+  for (const token of tokens) {
+    if (!candidates.some((c) => c.uuid === token.document.uuid)) {
+      candidates.push({ uuid: token.document.uuid, name: token.document.name ?? token.actor.name });
+    }
+  }
+  step.candidates = candidates;
+  step.chosen = tokens.map((t) => t.document.uuid);
+  step.enabled = true;
+  return null;
 }
 
 /* -------------------------------------------- */

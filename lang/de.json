@@ -389,7 +389,11 @@
         "Edit": "Bearbeiten",
         "Skip": "Nicht anwenden",
         "Affected": "Betroffene Kreaturen",
-        "NoneFound": "Keine passenden Kreaturen in der Szene."
+        "NoneFound": "Keine Kreaturen gefunden. Falls das nicht stimmt, wähle die Spielsteine auf der Karte aus und übernimm sie hier.",
+      "UseSelected": "Ausgewählte Spielsteine übernehmen",
+      "Limit": "max. {count}",
+      "SelectFirst": "Wähle zuerst die betroffenen Spielsteine auf der Karte aus.",
+      "TooMany": "Diese Karte betrifft weniger Kreaturen – wähle weniger Spielsteine aus."
       },
       "Result": {
         "Title": "Angewendet: {title}",
